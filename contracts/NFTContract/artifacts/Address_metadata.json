@@ -1,0 +1,45 @@
+{
+	"compiler": {
+		"version": "0.6.12+commit.27d51765"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"details": "Collection of functions related to the address type",
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/NFTContract/preSale_contract.sol": "Address"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/NFTContract/preSale_contract.sol": {
+			"keccak256": "0x66cf3e679c3a7cc9a3f3db4409736a12fee261acae3ff232502d47c947906de0",
+			"urls": [
+				"bzz-raw://671e6b5ce8b052322ba2ee4d95077e728130069e8353166f30ea8d46ba903d57",
+				"dweb:/ipfs/QmThrgfewiJzVLR4iGMtGbFCYibn5eqwjztBBMqr29sm78"
+			]
+		}
+	},
+	"version": 1
+}

@@ -1,0 +1,160 @@
+{
+	"compiler": {
+		"version": "0.8.13+commit.abaa5c0e"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_logic",
+						"type": "address"
+					},
+					{
+						"internalType": "bytes",
+						"name": "_data",
+						"type": "bytes"
+					}
+				],
+				"stateMutability": "payable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "previousAdmin",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "newAdmin",
+						"type": "address"
+					}
+				],
+				"name": "AdminChanged",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "beacon",
+						"type": "address"
+					}
+				],
+				"name": "BeaconUpgraded",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "implementation",
+						"type": "address"
+					}
+				],
+				"name": "Upgraded",
+				"type": "event"
+			},
+			{
+				"stateMutability": "payable",
+				"type": "fallback"
+			},
+			{
+				"stateMutability": "payable",
+				"type": "receive"
+			}
+		],
+		"devdoc": {
+			"details": "This contract implements an upgradeable proxy. It is upgradeable because calls are delegated to an implementation address that can be changed. This address is stored in storage in the location specified by https://eips.ethereum.org/EIPS/eip-1967[EIP1967], so that it doesn't conflict with the storage layout of the implementation behind the proxy.",
+			"kind": "dev",
+			"methods": {
+				"constructor": {
+					"details": "Initializes the upgradeable proxy with an initial implementation specified by `_logic`. If `_data` is nonempty, it's used as data in a delegate call to `_logic`. This will typically be an encoded function call, and allows initializating the storage of the proxy like a Solidity constructor."
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/NFTContract2/ERC1967Proxy.sol": "ERC1967Proxy"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/NFTContract2/Address.sol": {
+			"keccak256": "0xd217e5030771ed77e0df8d1028f05abdaba7df6991fc6e03229d8624c1999d9a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6f918396df8f3717ca4d2f978757604eb540b256a87e898e30105fab09010666",
+				"dweb:/ipfs/QmczhRz4N5D1vfWU1EGAGStDP57zNMLmqde9GBW3eFbAHR"
+			]
+		},
+		"contracts/NFTContract2/ERC1967Proxy.sol": {
+			"keccak256": "0x2f7c97e3a1541fcd00af599fb6be770518af3af0f984a634d88416b28e9648b6",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://07f75eb2339f80a4fb2c1aa631c67cb6db5e4e4cefaef4cd95a9fb7cfb18b506",
+				"dweb:/ipfs/QmbP7hu2HUyrrBnXEh86Kq5C3FZgzyFY8SnbFbYtnGT8Cn"
+			]
+		},
+		"contracts/NFTContract2/ERC1967Upgrade.sol": {
+			"keccak256": "0xa25ee4e92c4ae586e422260ce072247349cc8b2a969f10b3ef9d7f0aabfb7935",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://094d17181b63f9dc747ac0314f7366ec2ba43fd0cab12f228df305838b98dd25",
+				"dweb:/ipfs/QmXGbasnBYxZkqpsFRf8MSxhSeRJjqUthVGpfRVCaEMSiW"
+			]
+		},
+		"contracts/NFTContract2/IBeacon.sol": {
+			"keccak256": "0x69e09c6f079130e3608a163b7589a29baccdb4fc9a3b1f8b437c08e2e35395c0",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://d51b01c145cb8b76ae809b2688272da628f74ddc2526502fcbc5da0b2d1c138f",
+				"dweb:/ipfs/QmWHJjhBKbWWNwewrxVSgFWyLPW3PEBxkHbzy9B8r2onEM"
+			]
+		},
+		"contracts/NFTContract2/Proxy.sol": {
+			"keccak256": "0x1b9788d2f62369d55aef39442b0a8c9b05114ff6cb0c59b4f0f4485d1648f0f2",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://35d1f8588cf1c70820a1aa2249862d663db591327cc0f94efad1d615c3ec76b4",
+				"dweb:/ipfs/QmT4FW1G1unTdr7MTNHaUvDndjrM5Gj5AYcFMvkvq3HnXh"
+			]
+		},
+		"contracts/NFTContract2/StorageSlot.sol": {
+			"keccak256": "0x8b11be685cb1f1a574707f89190beac61ade63e30a1b98aca146b29f0e6b3e50",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6d128b68c41e2f9007bafd39531ba1f1798587ac5760ca9da0440fe7c35d2315",
+				"dweb:/ipfs/QmatXLGSAw6UM69g46qbxVbaCsCH6mEHqkanDCR2KpH9Yo"
+			]
+		}
+	},
+	"version": 1
+}
