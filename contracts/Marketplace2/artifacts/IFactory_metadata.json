@@ -1,0 +1,115 @@
+{
+	"compiler": {
+		"version": "0.8.13+commit.abaa5c0e"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					}
+				],
+				"name": "ingameItem",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "id",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address",
+								"name": "owner",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "itemId",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "externalId",
+								"type": "string"
+							},
+							{
+								"internalType": "bool",
+								"name": "ingame",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct IFactory.ingameItems",
+						"name": "",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "newOnwer",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					}
+				],
+				"name": "setOwnerIngameItem",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/Marketplace2/Marketplace.sol": "IFactory"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/Marketplace2/Marketplace.sol": {
+			"keccak256": "0x66e4770f7573cc5581452e1e445e2b370e18585ccf36bc8831e367d8d7c78bc1",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://cc15661ecf3f7e6f429a7b809f802e889dac939906d462231a8ad5f313437f7c",
+				"dweb:/ipfs/QmYX3nNvMtdmcyeiuJXZiZwr7wzG3qmiPEJbtTzmg4KiJD"
+			]
+		}
+	},
+	"version": 1
+}

@@ -14,100 +14,143 @@ contract SQFItemFactory is FactoryStorage, Ownable
 
 {
     address public nftContract;
-    uint256 public bronzeActivePrice;
-    uint256 public silverActivePrice;
-    uint256 public goldActivePrice;
+    uint256 public goblinActivePrice;
+    uint256 public devilActivePrice;
+    uint256 public angelActivePrice;
 
     SQFItem public _mainToken;
 
-    event NFTMinted(
-        uint256 tokenId,
-        address indexed to,
-        string itemId,
-        string externalId
-    );
-    event buyActive(
-        uint256 tokenId,
-        address indexed to,
-        string typeActive
-    );
 
-    constructor(address _nftContract) {
+    constructor(address _nftContract, address _tokenContract) {
         require(_nftContract != address(0), "Invalid contract address");
         _mainToken = SQFItem(_nftContract);
+        sqfToken = IERC20(_tokenContract);
         nftContract = _nftContract;
-        bronzeActivePrice = 500*10**18;
-        silverActivePrice = 1000*10**18;
-        goldActivePrice = 1500*10**18;
+        goblinActivePrice = 500*10**18;
+        devilActivePrice = 1000*10**18;
+        angelActivePrice = 1500*10**18;
     }
 
     function setSQFToken(address _address) external onlyOwner {
         sqfToken = IERC20(_address);
     }
 
-    function mintActiveItem(string memory typeItem) public { 
-        uint256 itemId;
+    function safeMintItem(string memory itemId, string memory externalId) public { 
         require(
-        keccak256(abi.encodePacked(typeItem)) == keccak256(abi.encodePacked("BRONZE"))
-        || keccak256(abi.encodePacked(typeItem)) == keccak256(abi.encodePacked("SILVER"))
-        || keccak256(abi.encodePacked(typeItem)) == keccak256(abi.encodePacked("GOLD")),
-        "Item's type is not valid"
+            userStatus[msg.sender].status != activeStatus.HUMAN,
+            "You must active account before mint NFTs!"
         );
-        if (keccak256(abi.encodePacked(typeItem)) == keccak256(abi.encodePacked("BRONZE"))) {
-            sqfToken.transferFrom(msg.sender, address(owner()),bronzeActivePrice);
-            _mainToken.safeBuyActive(msg.sender);
-            itemId = _mainToken.currentCountId();
-            activeItem[itemId] = activeItems(
-            itemId,
+        uint256 tokenId = _mainToken.currentCountId();
+        _mainToken.safeMintToUser(msg.sender,itemId,externalId);
+        ingameItem[tokenId] = ingameItems(
+            tokenId,
             msg.sender,
-            activeStatus.BRONZE
+            itemId,
+            externalId,
+            false
+        );
+
+    }
+
+    function setOwnerIngameItem(address from,address newOwner, uint256 tokenId) public  { 
+            require(from == ingameItem[tokenId].owner, "Only owner of token can do this");
+            ingameItem[tokenId].owner = newOwner;
+    }
+
+
+    function activeAccount(string memory typeAccount) public { 
+        require(
+        keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("0"))
+        || keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("1"))
+        || keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("2"))
+        || keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("3")),
+        "Account's type is not valid"
+        );
+        if (keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("1"))) {
+            sqfToken.transferFrom(msg.sender, address(owner()),goblinActivePrice);
+            userStatus[msg.sender] = usersStatus(
+            activeStatus.GOBLIN
             );
         }
-        else if(keccak256(abi.encodePacked(typeItem)) == keccak256(abi.encodePacked("SILVER"))) { 
-            sqfToken.transferFrom(msg.sender, address(owner()),silverActivePrice);
-            _mainToken.safeBuyActive(msg.sender);
-            itemId = _mainToken.currentCountId();
-            activeItem[itemId] = activeItems(
-            itemId,
-            msg.sender,
-            activeStatus.SILVER
-        );
+        else if(keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("2"))) { 
+            sqfToken.transferFrom(msg.sender, address(owner()),devilActivePrice);
+            userStatus[msg.sender] = usersStatus(
+            activeStatus.DEVIL
+            );
         }
-        else if(keccak256(abi.encodePacked(typeItem)) == keccak256(abi.encodePacked("GOLD"))) { 
-            sqfToken.transferFrom(msg.sender, address(owner()),goldActivePrice);
-            _mainToken.safeBuyActive(msg.sender);
-            itemId = _mainToken.currentCountId();
-            activeItem[itemId] = activeItems(
-            itemId,
-            msg.sender,
-            activeStatus.GOLD
-        );
+        else if(keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("3"))) { 
+            sqfToken.transferFrom(msg.sender, address(owner()),angelActivePrice);
+            userStatus[msg.sender] = usersStatus(
+            activeStatus.ANGEL
+            );
         }
-        emit buyActive(itemId,msg.sender,typeItem);
+        emit ActiveAccount(msg.sender,typeAccount);
     }
+
 
     function fetchMyActiveItem() public view returns(activeItems[] memory) { 
         uint totalItemCount = _mainToken.currentCountId();
         uint itemCount = 0;
         uint currentIndex = 0;
+        for (uint i = 0; i < totalItemCount; i++) {
+            if (activeItem[i + 1].owner == msg.sender) {
+            itemCount += 1;
+            }
+        }
 
-    for (uint i = 0; i < totalItemCount; i++) {
-      if (activeItem[i + 1].owner == msg.sender) {
-        itemCount += 1;
-      }
+        activeItems[] memory items = new activeItems[](itemCount);
+        for (uint i = 0; i < totalItemCount; i++) {
+            if (activeItem[i + 1].owner == msg.sender) {
+                uint currentId = activeItem[i + 1].id;
+                activeItems storage currentItem = activeItem[currentId];
+                items[currentIndex] = currentItem;
+                currentIndex += 1;
+            }
+        }
+        return items;
     }
 
-    activeItems[] memory items = new activeItems[](itemCount);
-    for (uint i = 0; i < totalItemCount; i++) {
-      if (activeItem[i + 1].owner == msg.sender) {
-        uint currentId = activeItem[i + 1].id;
-        activeItems storage currentItem = activeItem[currentId];
-        items[currentIndex] = currentItem;
-        currentIndex += 1;
-      }
-    }
-   
-    return items;
-    }
+    function fetchMyItem() public view returns(ingameItems[] memory) { 
+        uint totalItemCount = _mainToken.currentCountId();
+        uint itemCount = 0;
+        uint currentIndex = 0;
+        for (uint i = 0; i < totalItemCount; i++) {
+            if (ingameItem[i + 1].owner == msg.sender) {
+            itemCount += 1;
+            }
+        }
 
+        ingameItems[] memory items = new ingameItems[](itemCount);
+        for (uint i = 0; i < totalItemCount; i++) {
+          if (ingameItem[i + 1].owner == msg.sender) {
+            uint currentId = ingameItem[i + 1].id;
+            ingameItems storage currentItem = ingameItem[currentId];
+            items[currentIndex] = currentItem;
+            currentIndex += 1;
+          }
+        }
+        return items;
+    }
+    
+    function fetchUnlockItem() public view returns(ingameItems[] memory) { 
+        uint totalItemCount = _mainToken.currentCountId();
+        uint itemCount = 0;
+        uint currentIndex = 0;
+        for (uint i = 0; i < totalItemCount; i++) {
+            if (ingameItem[i + 1].owner == msg.sender) {
+            itemCount += 1;
+            }
+        }
+
+        ingameItems[] memory items = new ingameItems[](itemCount);
+        for (uint i = 0; i < totalItemCount; i++) {
+          if (ingameItem[i + 1].owner == msg.sender && ingameItem[i+1].ingame == false){
+            uint currentId = ingameItem[i + 1].id;
+            ingameItems storage currentItem = ingameItem[currentId];
+            items[currentIndex] = currentItem;
+            currentIndex += 1;
+          }
+        }
+        return items;
+    }    
 }

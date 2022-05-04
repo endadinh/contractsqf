@@ -1,5 +1,3 @@
-
-
 pragma solidity ^0.8.0;
 
 /**
@@ -442,6 +440,34 @@ abstract contract ReentrancyGuard {
 
 pragma solidity ^0.8.0;
 
+interface IFactory { 
+
+  enum activeStatus {
+        HUMAN,
+        GOBLIN,
+        DEVIL,
+        ANGEL
+    }
+
+    struct ingameItems { 
+        uint256 id;
+        address owner;
+        string itemId;
+        string externalId;
+        bool ingame;
+    }
+
+    struct usersStatus { 
+        activeStatus status;
+    }
+
+    function ingameItem(uint tokenId) view external returns (ingameItems memory);
+    function setOwnerIngameItem(address from, address newOnwer, uint tokenId) external;
+
+}
+
+pragma solidity ^0.8.0;
+
 contract MarketplaceStorage {
     enum ItemStatus {
         MINTED,
@@ -450,34 +476,12 @@ contract MarketplaceStorage {
 
   struct MarketItem {
     uint256 itemId;
-    address nftContract;
     uint256 tokenId;
     address payable seller;
     address payable owner;
     uint256 price;
     ItemStatus status;
   }
-    // struct Item {
-    //     // Item ID
-    //     bytes32 id;
-    //     // Owner of the NFT
-    //     address seller;
-    //     // NFT registry address
-    //     address nftAddress;
-    //     // Price (in wei) for the listing item
-    //     uint256 price;
-    //     // Price (in Anta) for the listing item
-    //     uint256 priceAnta;
-    //     // status of the item
-    //     ItemStatus status;
-    // }
-
-    struct ItemOffer {
-        // Item ID
-        bytes32 id;
-        // Price (in wei) for the published item
-        uint256 offerPrice;
-    }
 
 
     MarketItem public allMarketItems;
@@ -488,13 +492,9 @@ contract MarketplaceStorage {
     // From ERC721 registry assetId to Item (to avoid asset collision)
     mapping(address => mapping(uint256 => MarketItem)) public items;
 
-
-    // From ERC721 registry assetId to Offer (to avoid asset collision)
-    mapping(address => mapping(uint256 => mapping(address => ItemOffer)))
-
-
-    public itemOffers;
-    IERC20 public sqfToken;
+    IERC20 public mainToken;
+    IFactory public factory;
+    IERC721 public mainNFTs;
 
     uint8 public bnbFeePercent;
     uint8 public antaFeePercent;
@@ -509,7 +509,6 @@ contract MarketplaceStorage {
     
     event MarketItemCreated (
         uint indexed itemId,
-        address indexed nftContract,
         uint256 indexed tokenId,
         address seller,
         address owner,
@@ -546,28 +545,46 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
   Counters.Counter private _itemsSold;
 
   mapping(uint256 => MarketItem) private idToMarketItem;
+  
+  constructor(address _mainToken, address _mainNFT, address _mainFactory ) {
+      mainToken = IERC20(_mainToken);
+      mainNFTs = IERC721(_mainNFT);
+      factory = IFactory(_mainFactory); 
 
-  function getMarketItem(uint256 marketItemId) public view returns (MarketItem memory) {
-    return idToMarketItem[marketItemId];
   }
 
-function setSQFToken(address _address) external onlyOwner {
-        sqfToken = IERC20(_address);
-}
+    function getMarketItem(uint256 marketItemId) public view returns (MarketItem memory) {
+        return idToMarketItem[marketItemId];
+    }
+
+    function setMainToken(address _address) external onlyOwner {
+        mainToken = IERC20(_address);
+    }
+    function setMainNFT(address _address) external onlyOwner {
+        mainNFTs = IERC721(_address);
+    }
+    function setFactory(address _address) external onlyOwner {
+        factory = IFactory(_address);
+    }
+
+    function getAlalalalala(uint tokenId) public view returns (bool) { 
+        IFactory.ingameItems memory item = factory.ingameItem(tokenId);
+        return item.ingame;
+    }
 
   function createMarketItem(
-    address nftContract,
     uint256 tokenId,
     uint256 price
   ) public payable nonReentrant {
     require(price > 0, "Price must be at least 1 wei");
 
+    IFactory.ingameItems memory item = factory.ingameItem(tokenId);
+    require(item.ingame == false, "Item is not available now !" );
     _itemIds.increment();
     uint256 itemId = _itemIds.current();
     
     idToMarketItem[itemId] =  MarketItem(
       itemId,
-      nftContract,
       tokenId,
       payable(msg.sender),
       payable(address(0)),
@@ -575,11 +592,11 @@ function setSQFToken(address _address) external onlyOwner {
       ItemStatus.LIST
     );
 
-    IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
+    mainNFTs.transferFrom(msg.sender, address(this), tokenId);
+    factory.setOwnerIngameItem(msg.sender,address(this), tokenId);
 
     emit MarketItemCreated(
       itemId,
-      nftContract,
       tokenId,
       msg.sender,
       address(0),
@@ -587,8 +604,12 @@ function setSQFToken(address _address) external onlyOwner {
     );
   }
 
+    function testView(uint256 tokenId) public view returns (address) { 
+        IFactory.ingameItems memory item = factory.ingameItem(tokenId);
+        return item.owner;
+    }
+
   function createMarketSale(
-    address nftContract,
     uint256 itemId,
     uint256 amount
     ) public nonReentrant {
@@ -597,11 +618,12 @@ function setSQFToken(address _address) external onlyOwner {
     require(amount == price, "Please submit the asking price in order to complete the purchase");
 
     // idToMarketItem[itemId].seller.transfer(msg.value);
-    sqfToken.transferFrom(msg.sender, idToMarketItem[itemId].seller , amount);
-    IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+    mainToken.transferFrom(msg.sender, idToMarketItem[itemId].seller , amount);
+    mainNFTs.transferFrom(address(this), msg.sender, tokenId);
     idToMarketItem[itemId].owner = payable(msg.sender);
     idToMarketItem[itemId].status = ItemStatus.MINTED;
-
+    factory.setOwnerIngameItem(address(this),msg.sender, tokenId);
+    // require(item.ingame == false, "Item is not available now !" );
     _itemsSold.increment();
   }
 
@@ -642,6 +664,7 @@ function setSQFToken(address _address) external onlyOwner {
 
         address deleteBy = msg.sender;
         MarketItem memory item = idToMarketItem[itemId];
+
 
         require(item.itemId != 0, "Asset not published");
         require(item.status != ItemStatus.MINTED, "Asset delisted");

@@ -11,7 +11,7 @@ contract Roleable {
         _;
     }
     modifier onlyMinter() {
-        require (_minters[msg.sender] == true, "can't perform melt");
+        require (_minters[msg.sender] == true, "can't perform mint");
         _;
     }
     modifier onlyPendingMinterAdmin() {
@@ -26,7 +26,7 @@ contract Roleable {
         _minters[msg.sender] = true;
     }
 
-    function minterAddmin() public view returns (address) {
+    function minterAdmin() public view returns (address) {
         return _minteradmin;
     }
 
@@ -38,11 +38,11 @@ contract Roleable {
         _minters[account] = false;
     }
 
-    function transferMinterAddmin(address newMelter) public onlyMinterAdmin {
-        pendingMinterAdmin = newMelter;
+    function transferMinterAdmin(address newMinter) public onlyMinterAdmin {
+        pendingMinterAdmin = newMinter;
     }
 
-    function claimMinterAddmin() public onlyPendingMinterAdmin {
+    function claimMinterAdmin() public onlyPendingMinterAdmin {
         emit MinterTransferred(_minteradmin, pendingMinterAdmin);
         _minteradmin = pendingMinterAdmin;
         pendingMinterAdmin = address(0);

@@ -11,6 +11,11 @@
 						"internalType": "address",
 						"name": "_nftContract",
 						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_tokenContract",
+						"type": "address"
 					}
 				],
 				"stateMutability": "nonpayable",
@@ -32,7 +37,7 @@
 						"type": "string"
 					}
 				],
-				"name": "AcctiveAccount",
+				"name": "ActiveAccount",
 				"type": "event"
 			},
 			{
@@ -96,37 +101,6 @@
 				"anonymous": false,
 				"inputs": [
 					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "tokenId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "to",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "itemId",
-						"type": "string"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "externalId",
-						"type": "string"
-					}
-				],
-				"name": "NFTMinted",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
 						"indexed": true,
 						"internalType": "address",
 						"name": "previousOwner",
@@ -146,25 +120,38 @@
 				"anonymous": false,
 				"inputs": [
 					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "tokenId",
-						"type": "uint256"
-					},
-					{
 						"indexed": true,
 						"internalType": "address",
-						"name": "to",
+						"name": "owner",
 						"type": "address"
 					},
 					{
 						"indexed": false,
 						"internalType": "string",
-						"name": "typeActive",
+						"name": "tokenId",
 						"type": "string"
 					}
 				],
-				"name": "buyActive",
+				"name": "TransferToGame",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "tokenId",
+						"type": "string"
+					}
+				],
+				"name": "UnlockToken",
 				"type": "event"
 			},
 			{
@@ -191,6 +178,19 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "typeAccount",
+						"type": "string"
+					}
+				],
+				"name": "activeAccount",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -224,7 +224,20 @@
 			},
 			{
 				"inputs": [],
-				"name": "bronzeActivePrice",
+				"name": "angelActivePrice",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "devilActivePrice",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -267,7 +280,87 @@
 			},
 			{
 				"inputs": [],
-				"name": "goldActivePrice",
+				"name": "fetchMyItem",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "id",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address",
+								"name": "owner",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "itemId",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "externalId",
+								"type": "string"
+							},
+							{
+								"internalType": "bool",
+								"name": "ingame",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct FactoryStorage.ingameItems[]",
+						"name": "",
+						"type": "tuple[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "fetchUnlockItem",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "id",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address",
+								"name": "owner",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "itemId",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "externalId",
+								"type": "string"
+							},
+							{
+								"internalType": "bool",
+								"name": "ingame",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct FactoryStorage.ingameItems[]",
+						"name": "",
+						"type": "tuple[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "goblinActivePrice",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -289,13 +382,23 @@
 				"name": "ingameItem",
 				"outputs": [
 					{
-						"internalType": "bytes32",
+						"internalType": "uint256",
 						"name": "id",
-						"type": "bytes32"
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
 					},
 					{
 						"internalType": "string",
 						"name": "itemId",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "externalId",
 						"type": "string"
 					},
 					{
@@ -305,19 +408,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "string",
-						"name": "typeItem",
-						"type": "string"
-					}
-				],
-				"name": "mintActiveItem",
-				"outputs": [],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -356,6 +446,47 @@
 			{
 				"inputs": [
 					{
+						"internalType": "string",
+						"name": "itemId",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "externalId",
+						"type": "string"
+					}
+				],
+				"name": "safeMintItem",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					}
+				],
+				"name": "setOwnerIngameItem",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "_address",
 						"type": "address"
@@ -364,19 +495,6 @@
 				"name": "setSQFToken",
 				"outputs": [],
 				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "silverActivePrice",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -408,18 +526,13 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
+						"internalType": "address",
 						"name": "",
-						"type": "uint256"
+						"type": "address"
 					}
 				],
 				"name": "userStatus",
 				"outputs": [
-					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
-					},
 					{
 						"internalType": "enum FactoryStorage.activeStatus",
 						"name": "status",
@@ -532,11 +645,11 @@
 			]
 		},
 		"contracts/NFTContract3/FactoryStorage.sol": {
-			"keccak256": "0x5893e5491802e0a257b2e935da7163d0f6dc5de67d93bfa4bef5b479fa19edfe",
+			"keccak256": "0xc67086748b8107424142629a1b30f5eb5e3db045aa18b3bf296895a153e72795",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://8fa81689ba484593b26cd48e49f7a792e61ab24aa9956461eb48555767a3ef9c",
-				"dweb:/ipfs/QmYs9Lc9s5bnNUDs9zWnAz5LooZEdb8kVy31zo1ytvYYFH"
+				"bzz-raw://be3a98e63854fd1428340cc13c6aa108ac8ead6c214bcc1c4f760ee77d92521c",
+				"dweb:/ipfs/QmXxDb3peUhQE2eAYMobwLzghugzhWbrEaHkQeUwEs8Q3U"
 			]
 		},
 		"contracts/NFTContract3/IERC165.sol": {
@@ -596,19 +709,19 @@
 			]
 		},
 		"contracts/NFTContract3/Roleable.sol": {
-			"keccak256": "0xb706daf4edf8b9af72e5923aa73af7b6bbf47ae6e44288b34122cd5efc9c4254",
+			"keccak256": "0x6bd0d83a385ecb65efcd69a55926e9c0a763c670a9a4ca8fda6446beb55519ee",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://44150133ec312104b1ec05d079dd2df8d49726c5d7a414f4d5b956b047561671",
-				"dweb:/ipfs/Qmb5jfErgrjUhgvZ9aw4tBsXBsDBEnrvKRBW42ts3jVG9P"
+				"bzz-raw://a7094d6fe9b0cebe6057580223fe5d54c0bf6b846698d3fdf267e44e00d599a6",
+				"dweb:/ipfs/QmctejvXgW32a5pbH6TdCFWN1gX8vKDGWrfTA9uR5RBnSp"
 			]
 		},
 		"contracts/NFTContract3/SQFIFactory.sol": {
-			"keccak256": "0xa2d2620dad2c890f70a3d2d7208fafe157915ba4290f1d81950d00f0a6a091d4",
+			"keccak256": "0x1b6735546ed7b278b83819c35f428d9cd90bc57849c224ed2cc66da25a66489e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://f3ac78fc101f360dec3b8140141a29c8f0ade81d29d44325c32fe8af39fac2d9",
-				"dweb:/ipfs/QmeBzVtY37hyoE8rZjhWeFHa14N9Sv8qm5Ve9Rws5quGeC"
+				"bzz-raw://ddf71b26c180700d5c6a22852263c65b35e247fb09b21c2c9dc25add3931a26f",
+				"dweb:/ipfs/QmTBXPXFNGhjkzvE3j1Kw2m8NznXGT25sTdWHMZ1VdwAgx"
 			]
 		},
 		"contracts/NFTContract3/SQFNFT.sol": {

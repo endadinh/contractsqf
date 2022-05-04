@@ -21,7 +21,7 @@
 						"type": "string"
 					}
 				],
-				"name": "AcctiveAccount",
+				"name": "ActiveAccount",
 				"type": "event"
 			},
 			{
@@ -82,6 +82,44 @@
 				"type": "event"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "tokenId",
+						"type": "string"
+					}
+				],
+				"name": "TransferToGame",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "tokenId",
+						"type": "string"
+					}
+				],
+				"name": "UnlockToken",
+				"type": "event"
+			},
+			{
 				"inputs": [],
 				"name": "ERC721_Interface",
 				"outputs": [
@@ -134,13 +172,23 @@
 				"name": "ingameItem",
 				"outputs": [
 					{
-						"internalType": "bytes32",
+						"internalType": "uint256",
 						"name": "id",
-						"type": "bytes32"
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
 					},
 					{
 						"internalType": "string",
 						"name": "itemId",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "externalId",
 						"type": "string"
 					},
 					{
@@ -168,18 +216,13 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
+						"internalType": "address",
 						"name": "",
-						"type": "uint256"
+						"type": "address"
 					}
 				],
 				"name": "userStatus",
 				"outputs": [
-					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
-					},
 					{
 						"internalType": "enum FactoryStorage.activeStatus",
 						"name": "status",
@@ -218,11 +261,11 @@
 	},
 	"sources": {
 		"contracts/NFTContract3/FactoryStorage.sol": {
-			"keccak256": "0x5704b2db4b95fec6c9daba703560652f22351fabe7159a902a8d3db57d9817cc",
+			"keccak256": "0xc67086748b8107424142629a1b30f5eb5e3db045aa18b3bf296895a153e72795",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://5f9a6d9549c649db2dcd22a36bc41f539d73ca2520010dfb0e7a1acbad047998",
-				"dweb:/ipfs/QmTTUQNmCiGY44pC1iTiG5JbKaZLhaktSg7Cx9Vkupm45k"
+				"bzz-raw://be3a98e63854fd1428340cc13c6aa108ac8ead6c214bcc1c4f760ee77d92521c",
+				"dweb:/ipfs/QmXxDb3peUhQE2eAYMobwLzghugzhWbrEaHkQeUwEs8Q3U"
 			]
 		}
 	},

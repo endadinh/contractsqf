@@ -24,10 +24,10 @@ pragma solidity ^0.8.0;
 contract FactoryStorage {
 
     enum activeStatus {
-        UNACTIVE,
-        BRONZE,
-        SILVER,
-        GOLD
+        HUMAN,
+        GOBLIN,
+        DEVIL,
+        ANGEL
     }
 
     struct activeItems {
@@ -37,13 +37,14 @@ contract FactoryStorage {
     }
 
     struct ingameItems { 
-        bytes32 id;
+        uint256 id;
+        address owner;
         string itemId;
+        string externalId;
         bool ingame;
     }
 
     struct usersStatus { 
-        address user;
         activeStatus status;
     }
 
@@ -54,12 +55,14 @@ contract FactoryStorage {
     // From ERC721 registry assetId to Item (to avoid asset collision)
     mapping(uint256 => activeItems) public activeItem;
     mapping(uint256 => ingameItems) public ingameItem;
-    mapping(uint256 => usersStatus) public userStatus;
+    mapping(address => usersStatus) public userStatus;
 
 
     event Claim(address indexed receiver, string tokenId);
     event Burn(address indexed owner, string tokenId);
     event Mint(address indexed to, string tokenId);
-    event AcctiveAccount(address indexed user, string status);
+    event ActiveAccount(address indexed user, string status);
+    event TransferToGame(address indexed owner, string tokenId);
+    event UnlockToken(address indexed owner, string tokenId);
 
 }

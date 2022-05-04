@@ -44,14 +44,14 @@
 			},
 			{
 				"inputs": [],
-				"name": "claimMinterAddmin",
+				"name": "claimMinterAdmin",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
 				"inputs": [],
-				"name": "minterAddmin",
+				"name": "minterAdmin",
 				"outputs": [
 					{
 						"internalType": "address",
@@ -92,11 +92,11 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "newMelter",
+						"name": "newMinter",
 						"type": "address"
 					}
 				],
-				"name": "transferMinterAddmin",
+				"name": "transferMinterAdmin",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -130,11 +130,11 @@
 	},
 	"sources": {
 		"contracts/NFTContract3/Roleable.sol": {
-			"keccak256": "0xb706daf4edf8b9af72e5923aa73af7b6bbf47ae6e44288b34122cd5efc9c4254",
+			"keccak256": "0x6bd0d83a385ecb65efcd69a55926e9c0a763c670a9a4ca8fda6446beb55519ee",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://44150133ec312104b1ec05d079dd2df8d49726c5d7a414f4d5b956b047561671",
-				"dweb:/ipfs/Qmb5jfErgrjUhgvZ9aw4tBsXBsDBEnrvKRBW42ts3jVG9P"
+				"bzz-raw://a7094d6fe9b0cebe6057580223fe5d54c0bf6b846698d3fdf267e44e00d599a6",
+				"dweb:/ipfs/QmctejvXgW32a5pbH6TdCFWN1gX8vKDGWrfTA9uR5RBnSp"
 			]
 		}
 	},
