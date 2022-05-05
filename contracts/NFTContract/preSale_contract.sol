@@ -87,7 +87,6 @@ library SafeMath {
 	function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
 		require(b <= a, errorMessage);
 		uint256 c = a - b;
-
 		return c;
 	}
 
@@ -655,7 +654,7 @@ contract ERC20 is Context, IERC20, AccountFrozenBalances, Ownable, Meltable {
 pragma solidity 0.6.12;
 
 // Token with Governance.
-contract SQFToken is ERC20("Sancti Quest On Frontline", "SQF", 666.666666666*10**9*10**18, 333.333333333*10**9*10**18) {
+contract SQFToken is ERC20("Sancti Quest On Frontline", "SQF", 333.333333333*10**9*10**18, 255.466666666*10**9*10**18) {
 	address public feeaddr;
 	uint256 public transferFeeRate;
 	

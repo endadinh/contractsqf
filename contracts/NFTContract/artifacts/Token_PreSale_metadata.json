@@ -408,10 +408,10 @@
 	},
 	"sources": {
 		"contracts/NFTContract/preSale_contract.sol": {
-			"keccak256": "0x66cf3e679c3a7cc9a3f3db4409736a12fee261acae3ff232502d47c947906de0",
+			"keccak256": "0x38459bb3fa0a83c6477c1ba25a2da745968442064ab1606e29ae5a044a34b75a",
 			"urls": [
-				"bzz-raw://671e6b5ce8b052322ba2ee4d95077e728130069e8353166f30ea8d46ba903d57",
-				"dweb:/ipfs/QmThrgfewiJzVLR4iGMtGbFCYibn5eqwjztBBMqr29sm78"
+				"bzz-raw://0629db2e204be42e45809033cb5d2ae8e04d9d868dc166304a4cfa373728fe53",
+				"dweb:/ipfs/QmeEgnfVPKJgFGu6VS2HcP7h5iH9jaUzByaU55MQLg5wER"
 			]
 		}
 	},

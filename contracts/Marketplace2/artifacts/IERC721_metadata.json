@@ -362,11 +362,11 @@
 	},
 	"sources": {
 		"contracts/Marketplace2/Marketplace.sol": {
-			"keccak256": "0x66e4770f7573cc5581452e1e445e2b370e18585ccf36bc8831e367d8d7c78bc1",
+			"keccak256": "0x7225589fc6d5f9dbc7c53b6059fe4a97f6d758e60b2d75f0e8f0df344e70db15",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://cc15661ecf3f7e6f429a7b809f802e889dac939906d462231a8ad5f313437f7c",
-				"dweb:/ipfs/QmYX3nNvMtdmcyeiuJXZiZwr7wzG3qmiPEJbtTzmg4KiJD"
+				"bzz-raw://0a512d9185eb2cb3f8a6e94fbaaebe4937be52f86adb726fe043eb138c55f65b",
+				"dweb:/ipfs/Qmc2i94zbgc1ncQvNgRsQN69bZk3a8bYpwDp94adpn5igz"
 			]
 		}
 	},

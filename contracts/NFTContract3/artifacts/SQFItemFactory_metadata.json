@@ -249,38 +249,14 @@
 				"type": "function"
 			},
 			{
-				"inputs": [],
-				"name": "fetchMyActiveItem",
-				"outputs": [
+				"inputs": [
 					{
-						"components": [
-							{
-								"internalType": "uint256",
-								"name": "id",
-								"type": "uint256"
-							},
-							{
-								"internalType": "address",
-								"name": "owner",
-								"type": "address"
-							},
-							{
-								"internalType": "enum FactoryStorage.activeStatus",
-								"name": "status",
-								"type": "uint8"
-							}
-						],
-						"internalType": "struct FactoryStorage.activeItems[]",
-						"name": "",
-						"type": "tuple[]"
+						"internalType": "uint256",
+						"name": "itemId",
+						"type": "uint256"
 					}
 				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "fetchMyItem",
+				"name": "getItemsByItemId",
 				"outputs": [
 					{
 						"components": [
@@ -310,17 +286,23 @@
 								"type": "bool"
 							}
 						],
-						"internalType": "struct FactoryStorage.ingameItems[]",
+						"internalType": "struct FactoryStorage.ingameItems",
 						"name": "",
-						"type": "tuple[]"
+						"type": "tuple"
 					}
 				],
 				"stateMutability": "view",
 				"type": "function"
 			},
 			{
-				"inputs": [],
-				"name": "fetchUnlockItem",
+				"inputs": [
+					{
+						"internalType": "bool",
+						"name": "ingame",
+						"type": "bool"
+					}
+				],
+				"name": "getOwnItems",
 				"outputs": [
 					{
 						"components": [
@@ -408,6 +390,19 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					}
+				],
+				"name": "lockIngameItem",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -519,6 +514,19 @@
 					}
 				],
 				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					}
+				],
+				"name": "unlockIngameItem",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -717,11 +725,11 @@
 			]
 		},
 		"contracts/NFTContract3/SQFIFactory.sol": {
-			"keccak256": "0x1b6735546ed7b278b83819c35f428d9cd90bc57849c224ed2cc66da25a66489e",
+			"keccak256": "0xa95be5d78acfa1e1176c9e8d720426a6be413df0b5e97d3d3ea078c564bc8c90",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://ddf71b26c180700d5c6a22852263c65b35e247fb09b21c2c9dc25add3931a26f",
-				"dweb:/ipfs/QmTBXPXFNGhjkzvE3j1Kw2m8NznXGT25sTdWHMZ1VdwAgx"
+				"bzz-raw://2ca3f9f83ce4be9be9a7670a94f9197c37bf9d40c8726df06efd86a78a297990",
+				"dweb:/ipfs/QmUBsbBLStouNGuVCSrCYqZK7JwGNzusaCr5Dw1iDHkJkv"
 			]
 		},
 		"contracts/NFTContract3/SQFNFT.sol": {

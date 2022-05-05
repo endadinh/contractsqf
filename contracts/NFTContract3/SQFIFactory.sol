@@ -19,8 +19,7 @@ contract SQFItemFactory is FactoryStorage, Ownable
     uint256 public angelActivePrice;
 
     SQFItem public _mainToken;
-
-
+    
     constructor(address _nftContract, address _tokenContract) {
         require(_nftContract != address(0), "Invalid contract address");
         _mainToken = SQFItem(_nftContract);
@@ -57,8 +56,49 @@ contract SQFItemFactory is FactoryStorage, Ownable
             ingameItem[tokenId].owner = newOwner;
     }
 
+    function lockIngameItem(uint256 tokenId) public  { 
+            require(msg.sender == ingameItem[tokenId].owner, "Only owner of token can do this");
+            require(ingameItem[tokenId].ingame == false, "Locked item !");
+            ingameItem[tokenId].ingame = true;
+    }
 
+    function unlockIngameItem(uint256 tokenId) public  { 
+            require(msg.sender == ingameItem[tokenId].owner, "Only owner of token can do this");
+            require(ingameItem[tokenId].ingame == true, "Unlocked item !");
+            ingameItem[tokenId].ingame = false;
+    }
+
+    function getOwnItems(bool ingame) public view returns(ingameItems[] memory) { 
+            uint totalItemCount = _mainToken.currentCountId();
+            uint itemCount = 0;
+            uint currentIndex = 0;           
+            for (uint i = 0; i < totalItemCount; i++) {
+                if (( ingameItem[i].owner == msg.sender) && (ingameItem[i].ingame == ingame)) {
+                itemCount += 1;
+                }
+            }
+            ingameItems[] memory items = new ingameItems[](itemCount);
+            for (uint i = 0; i < totalItemCount; i++) {
+            if (( ingameItem[i].owner == msg.sender) && (ingameItem[i].ingame == ingame )) {
+
+                uint currentId = ingameItem[i].id;
+                ingameItems storage currentItem = ingameItem[currentId];
+                items[currentIndex] = currentItem;
+                currentIndex += 1;
+            }
+        }
+        return items;
+    }
+
+    function getItemsByItemId(uint itemId) public view returns (ingameItems memory) {
+        ingameItems memory item = ingameItem[itemId];
+        return item;
+    }
+
+    
+     
     function activeAccount(string memory typeAccount) public { 
+
         require(
         keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("0"))
         || keccak256(abi.encodePacked(typeAccount)) == keccak256(abi.encodePacked("1"))
@@ -86,71 +126,4 @@ contract SQFItemFactory is FactoryStorage, Ownable
         }
         emit ActiveAccount(msg.sender,typeAccount);
     }
-
-
-    function fetchMyActiveItem() public view returns(activeItems[] memory) { 
-        uint totalItemCount = _mainToken.currentCountId();
-        uint itemCount = 0;
-        uint currentIndex = 0;
-        for (uint i = 0; i < totalItemCount; i++) {
-            if (activeItem[i + 1].owner == msg.sender) {
-            itemCount += 1;
-            }
-        }
-
-        activeItems[] memory items = new activeItems[](itemCount);
-        for (uint i = 0; i < totalItemCount; i++) {
-            if (activeItem[i + 1].owner == msg.sender) {
-                uint currentId = activeItem[i + 1].id;
-                activeItems storage currentItem = activeItem[currentId];
-                items[currentIndex] = currentItem;
-                currentIndex += 1;
-            }
-        }
-        return items;
-    }
-
-    function fetchMyItem() public view returns(ingameItems[] memory) { 
-        uint totalItemCount = _mainToken.currentCountId();
-        uint itemCount = 0;
-        uint currentIndex = 0;
-        for (uint i = 0; i < totalItemCount; i++) {
-            if (ingameItem[i + 1].owner == msg.sender) {
-            itemCount += 1;
-            }
-        }
-
-        ingameItems[] memory items = new ingameItems[](itemCount);
-        for (uint i = 0; i < totalItemCount; i++) {
-          if (ingameItem[i + 1].owner == msg.sender) {
-            uint currentId = ingameItem[i + 1].id;
-            ingameItems storage currentItem = ingameItem[currentId];
-            items[currentIndex] = currentItem;
-            currentIndex += 1;
-          }
-        }
-        return items;
-    }
-    
-    function fetchUnlockItem() public view returns(ingameItems[] memory) { 
-        uint totalItemCount = _mainToken.currentCountId();
-        uint itemCount = 0;
-        uint currentIndex = 0;
-        for (uint i = 0; i < totalItemCount; i++) {
-            if (ingameItem[i + 1].owner == msg.sender) {
-            itemCount += 1;
-            }
-        }
-
-        ingameItems[] memory items = new ingameItems[](itemCount);
-        for (uint i = 0; i < totalItemCount; i++) {
-          if (ingameItem[i + 1].owner == msg.sender && ingameItem[i+1].ingame == false){
-            uint currentId = ingameItem[i + 1].id;
-            ingameItems storage currentItem = ingameItem[currentId];
-            items[currentIndex] = currentItem;
-            currentIndex += 1;
-          }
-        }
-        return items;
-    }    
 }

@@ -470,8 +470,8 @@ pragma solidity ^0.8.0;
 
 contract MarketplaceStorage {
     enum ItemStatus {
-        MINTED,
-        LIST
+        AVAIL,
+        SELLING
     }
 
   struct MarketItem {
@@ -500,7 +500,6 @@ contract MarketplaceStorage {
     uint8 public antaFeePercent;
 
     event DelistItemSuccessful(
-        address nftAddress,
         uint256 id,
         uint256 indexed assetId,
         address indexed delistBy,
@@ -589,7 +588,7 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
       payable(msg.sender),
       payable(address(0)),
       price,
-      ItemStatus.LIST
+      ItemStatus.SELLING
     );
 
     mainNFTs.transferFrom(msg.sender, address(this), tokenId);
@@ -621,7 +620,7 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
     mainToken.transferFrom(msg.sender, idToMarketItem[itemId].seller , amount);
     mainNFTs.transferFrom(address(this), msg.sender, tokenId);
     idToMarketItem[itemId].owner = payable(msg.sender);
-    idToMarketItem[itemId].status = ItemStatus.MINTED;
+    idToMarketItem[itemId].status = ItemStatus.AVAIL;
     factory.setOwnerIngameItem(address(this),msg.sender, tokenId);
     // require(item.ingame == false, "Item is not available now !" );
     _itemsSold.increment();
@@ -656,18 +655,15 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
         currentIndex += 1;
       }
     }
-   
     return items;
   }
-   function delistItem(address nftAddress, uint256 itemId) public {
-        _requireERC721(nftAddress);
-
+   function delistItem(uint256 itemId) public {
         address deleteBy = msg.sender;
         MarketItem memory item = idToMarketItem[itemId];
 
 
         require(item.itemId != 0, "Asset not published");
-        require(item.status != ItemStatus.MINTED, "Asset delisted");
+        require(item.status == ItemStatus.SELLING, "Asset delisted");
 
         address seller = item.seller;
         require(seller != address(0), "Invalid address");
@@ -675,12 +671,10 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
             seller == msg.sender,
             "Only seller can delist"
         );
-        IERC721 nftRegistry = IERC721(nftAddress);
-        nftRegistry.safeTransferFrom(address(this), seller, itemId);
-        item.status = ItemStatus.MINTED;
+        mainNFTs.safeTransferFrom(address(this), seller, itemId);
+        item.status = ItemStatus.AVAIL;
         delete idToMarketItem[itemId];
         emit DelistItemSuccessful(
-            nftAddress,
             item.itemId,
             itemId,
             deleteBy,
