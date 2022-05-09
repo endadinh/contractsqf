@@ -1,0 +1,61 @@
+{
+	"deploy": {
+		"VM:-": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"main:1": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"ropsten:3": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"rinkeby:4": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"kovan:42": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"görli:5": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		},
+		"Custom": {
+			"linkReferences": {},
+			"autoDeployLib": true
+		}
+	},
+	"data": {
+		"bytecode": {
+			"linkReferences": {},
+			"object": "6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220af0cf4691b43d000c27172d4d4f667c1e787dc9f59ca9ecd882899f122ebd28d64736f6c634300060c0033",
+			"opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH1 0xF JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x3F DUP1 PUSH1 0x1D PUSH1 0x0 CODECOPY PUSH1 0x0 RETURN INVALID PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x0 DUP1 REVERT INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 0xAF 0xC DELEGATECALL PUSH10 0x1B43D000C27172D4D4F6 PUSH8 0xC1E787DC9F59CA9E 0xCD DUP9 0x28 SWAP10 CALL 0x22 0xEB 0xD2 DUP14 PUSH5 0x736F6C6343 STOP MOD 0xC STOP CALLER ",
+			"sourceMap": "12331:634:0:-:0;;;;;;;;;;;;;;;;;;;"
+		},
+		"deployedBytecode": {
+			"immutableReferences": {},
+			"linkReferences": {},
+			"object": "6080604052600080fdfea2646970667358221220af0cf4691b43d000c27172d4d4f667c1e787dc9f59ca9ecd882899f122ebd28d64736f6c634300060c0033",
+			"opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x0 DUP1 REVERT INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 0xAF 0xC DELEGATECALL PUSH10 0x1B43D000C27172D4D4F6 PUSH8 0xC1E787DC9F59CA9E 0xCD DUP9 0x28 SWAP10 CALL 0x22 0xEB 0xD2 DUP14 PUSH5 0x736F6C6343 STOP MOD 0xC STOP CALLER ",
+			"sourceMap": "12331:634:0:-:0;;;;;"
+		},
+		"gasEstimates": {
+			"creation": {
+				"codeDepositCost": "12600",
+				"executionCost": "66",
+				"totalCost": "12666"
+			},
+			"internal": {
+				"_frozen_add(address,uint256)": "infinite",
+				"_frozen_balanceOf(address)": "infinite",
+				"_frozen_sub(address,uint256)": "infinite"
+			}
+		},
+		"methodIdentifiers": {}
+	},
+	"abi": []
+}

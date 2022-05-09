@@ -1,0 +1,46 @@
+{
+	"compiler": {
+		"version": "0.8.13+commit.abaa5c0e"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"details": "Collection of functions related to the address type",
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/MarketplaceContract/AddressUpgradeable.sol": "AddressUpgradeable"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/MarketplaceContract/AddressUpgradeable.sol": {
+			"keccak256": "0x60e2ec0f0db6aab87acf4a06ca4cd2f3591ab5467a150198f810e02799c6771d",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://3f88973621774d106f1892f9837f8bd3820811205c6958d01e853520da260925",
+				"dweb:/ipfs/QmVCLP4bSsAaHj51i5Uq3ACbUpKksnt1GnxCQwShb8YaaW"
+			]
+		}
+	},
+	"version": 1
+}

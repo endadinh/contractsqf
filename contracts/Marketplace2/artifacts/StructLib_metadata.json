@@ -1,0 +1,45 @@
+{
+	"compiler": {
+		"version": "0.8.13+commit.abaa5c0e"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/Marketplace2/Marketplace.sol": "StructLib"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/Marketplace2/Marketplace.sol": {
+			"keccak256": "0xb425ec1afbde21ec954bd57a48ab1a314ef37631500fccd30dad41e4a3897323",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://7f80508f5e91f79110f8ebf5d117c8c8ee7f8de72622cf9a78e2b91b18ebf614",
+				"dweb:/ipfs/QmQsGMxYPxMJAYLZb4Yf3VQ5cajPYY1TuhnRtChEVkcgsG"
+			]
+		}
+	},
+	"version": 1
+}
