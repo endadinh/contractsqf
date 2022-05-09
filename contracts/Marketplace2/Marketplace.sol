@@ -22,6 +22,7 @@ abstract contract Context {
 
 
 pragma solidity ^0.8.0;
+
 /**
  * @dev Contract module which provides a basic access control mechanism, where
  * there is an account (an owner) that can be granted exclusive access to
@@ -34,6 +35,7 @@ pragma solidity ^0.8.0;
  * `onlyOwner`, which can be applied to your functions to restrict their use to
  * the owner.
  */
+ 
 abstract contract Ownable is Context {
     address private _owner;
 
@@ -244,6 +246,7 @@ interface IERC721 is IERC165 {
      *
      * Emits a {Transfer} event.
      */
+
     function safeTransferFrom(
         address from,
         address to,
@@ -264,6 +267,7 @@ interface IERC721 is IERC165 {
      *
      * Emits a {Transfer} event.
      */
+
     function transferFrom(
         address from,
         address to,
@@ -440,8 +444,7 @@ abstract contract ReentrancyGuard {
 
 pragma solidity ^0.8.0;
 
-interface IFactory { 
-
+library StructLib { 
   enum activeStatus {
         HUMAN,
         GOBLIN,
@@ -460,15 +463,19 @@ interface IFactory {
     struct usersStatus { 
         activeStatus status;
     }
+}
 
-    function ingameItem(uint tokenId) view external returns (ingameItems memory);
-    function setOwnerIngameItem(address from, address newOnwer, uint tokenId) external;
+interface IFactory { 
 
+    function getIngameItem(uint tokenId) view external returns (StructLib.ingameItems memory);
+    function setOwnerIngameItem(address from, address newOwner, uint tokenId) external;
+    
 }
 
 pragma solidity ^0.8.0;
 
 contract MarketplaceStorage {
+
     enum ItemStatus {
         AVAIL,
         SELLING
@@ -477,20 +484,18 @@ contract MarketplaceStorage {
   struct MarketItem {
     uint256 itemId;
     uint256 tokenId;
-    address payable seller;
-    address payable owner;
+    address seller;
+    address owner;
     uint256 price;
     ItemStatus status;
   }
 
-
-    MarketItem public allMarketItems;
-
+    MarketItem[] public items;
     bytes4 public constant ERC721_Interface = bytes4(0x80ac58cd);
 
     mapping (uint256 => MarketItem) public allItems;
     // From ERC721 registry assetId to Item (to avoid asset collision)
-    mapping(address => mapping(uint256 => MarketItem)) public items;
+    // mapping(address => mapping(uint256 => MarketItem)) public items;
 
     IERC20 public mainToken;
     IFactory public factory;
@@ -507,22 +512,18 @@ contract MarketplaceStorage {
     );
     
     event MarketItemCreated (
-        uint indexed itemId,
+        uint256 indexed itemId,
         uint256 indexed tokenId,
         address seller,
         address owner,
         uint256 price
     );
 
-
     event BuyItemSuccessful(
-        bytes32 id,
-        uint256 indexed assetId,
+        uint256 itemId,
+        uint256 indexed tokenId,
         address indexed seller,
-        address nftAddress,
         uint256 price,
-        uint8 feePercent,
-        uint256 fee,
         address indexed buyer,
         string currency,
         uint256 createdAt
@@ -545,12 +546,34 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
 
   mapping(uint256 => MarketItem) private idToMarketItem;
   
-  constructor(address _mainToken, address _mainNFT, address _mainFactory ) {
+  constructor(address _mainToken, address _mainNFT, address _mainFactory ) payable {
       mainToken = IERC20(_mainToken);
       mainNFTs = IERC721(_mainNFT);
       factory = IFactory(_mainFactory); 
 
   }
+
+    function getMarketItem() public view returns(MarketItem[] memory) { 
+            uint totalItemCount = _itemIds.current();
+            uint itemCount = 0;
+            uint currentIndex = 0;           
+            for (uint i = 0; i < totalItemCount; i++) {
+                if (idToMarketItem[i].status == ItemStatus.SELLING) {
+                itemCount += 1;
+                }
+            }
+            MarketItem[] memory items = new MarketItem[](itemCount);
+            for (uint i = 0; i < totalItemCount; i++) {
+            if ( idToMarketItem[i].status == ItemStatus.SELLING) {
+
+                uint currentId = idToMarketItem[i].itemId;
+                MarketItem storage currentItem = idToMarketItem[currentId];
+                items[currentIndex] = currentItem;
+                currentIndex += 1;
+            }
+        }
+        return items;
+    }
 
     function getMarketItem(uint256 marketItemId) public view returns (MarketItem memory) {
         return idToMarketItem[marketItemId];
@@ -566,96 +589,65 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
         factory = IFactory(_address);
     }
 
-    function getAlalalalala(uint tokenId) public view returns (bool) { 
-        IFactory.ingameItems memory item = factory.ingameItem(tokenId);
-        return item.ingame;
+    function sellItemNeee(
+        uint256 tokenId,
+        uint256 price
+    ) public view returns(StructLib.ingameItems memory){ 
+        require(price > 0 , "Price must be at least 1 wei");
+        StructLib.ingameItems memory _item = factory.getIngameItem(tokenId);
+        return _item;
     }
 
   function createMarketItem(
     uint256 tokenId,
     uint256 price
-  ) public payable nonReentrant {
+  ) public {
     require(price > 0, "Price must be at least 1 wei");
-
-    IFactory.ingameItems memory item = factory.ingameItem(tokenId);
-    require(item.ingame == false, "Item is not available now !" );
-    _itemIds.increment();
+    StructLib.ingameItems memory _item = factory.getIngameItem(tokenId);
+    require(_item.ingame == false, "Item is not available now !" );
     uint256 itemId = _itemIds.current();
-    
+    _safeTransferToMarket(tokenId);
     idToMarketItem[itemId] =  MarketItem(
       itemId,
       tokenId,
-      payable(msg.sender),
-      payable(address(0)),
+      msg.sender,
+      address(this),
       price,
       ItemStatus.SELLING
     );
-
-    mainNFTs.transferFrom(msg.sender, address(this), tokenId);
-    factory.setOwnerIngameItem(msg.sender,address(this), tokenId);
+    _itemIds.increment();
 
     emit MarketItemCreated(
       itemId,
       tokenId,
       msg.sender,
-      address(0),
+      address(this),
       price
     );
   }
-
-    function testView(uint256 tokenId) public view returns (address) { 
-        IFactory.ingameItems memory item = factory.ingameItem(tokenId);
-        return item.owner;
-    }
-
   function createMarketSale(
     uint256 itemId,
     uint256 amount
-    ) public nonReentrant {
+    ) public {
     uint price = idToMarketItem[itemId].price;
     uint tokenId = idToMarketItem[itemId].tokenId;
+    address seller =  idToMarketItem[itemId].seller;
+    StructLib.ingameItems memory item = factory.getIngameItem(tokenId);
     require(amount == price, "Please submit the asking price in order to complete the purchase");
-
-    // idToMarketItem[itemId].seller.transfer(msg.value);
-    mainToken.transferFrom(msg.sender, idToMarketItem[itemId].seller , amount);
-    mainNFTs.transferFrom(address(this), msg.sender, tokenId);
-    idToMarketItem[itemId].owner = payable(msg.sender);
+    require(item.ingame == false, "Item is not available now !");
+    _safeBuyItem(itemId,amount,tokenId);
+    idToMarketItem[itemId].owner = address(msg.sender);
     idToMarketItem[itemId].status = ItemStatus.AVAIL;
-    factory.setOwnerIngameItem(address(this),msg.sender, tokenId);
-    // require(item.ingame == false, "Item is not available now !" );
     _itemsSold.increment();
-  }
-
-  function fetchMarketItem(uint itemId) public view returns (MarketItem memory) {
-    MarketItem memory item = idToMarketItem[itemId];
-    return item;
-  }
-
-  function fetchMarketItems() public view returns (MarketItem memory) {
-    return allMarketItems;
-  }
-
-  function fetchMyNFTs() public view returns (MarketItem[] memory) {
-    uint totalItemCount = _itemIds.current();
-    uint itemCount = 0;
-    uint currentIndex = 0;
-
-    for (uint i = 0; i < totalItemCount; i++) {
-      if (idToMarketItem[i + 1].owner == msg.sender) {
-        itemCount += 1;
-      }
-    }
-
-    MarketItem[] memory items = new MarketItem[](itemCount);
-    for (uint i = 0; i < totalItemCount; i++) {
-      if (idToMarketItem[i + 1].owner == msg.sender) {
-        uint currentId = idToMarketItem[i + 1].itemId;
-        MarketItem storage currentItem = idToMarketItem[currentId];
-        items[currentIndex] = currentItem;
-        currentIndex += 1;
-      }
-    }
-    return items;
+    emit BuyItemSuccessful(
+        itemId,
+        tokenId,
+        seller,
+        price,
+        address(msg.sender),
+        "SQF",
+        block.timestamp
+    );
   }
    function delistItem(uint256 itemId) public {
         address deleteBy = msg.sender;
@@ -681,48 +673,17 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
             block.timestamp
         );
     }
+        
+    function _safeTransferToMarket(uint256 tokenId) private {
+            factory.setOwnerIngameItem(payable(address(msg.sender)),address(this), tokenId);
+            mainNFTs.transferFrom(msg.sender, address(this), tokenId);
+    } 
 
-//    function buyItemBySQF(
-//         address nftAddress,
-//         uint256 assetId,
-//         uint256 priceAnta
-//     ) public {
-//         _requireERC721(nftAddress);
-
-//         address sender = msg.sender;
-//         IERC721 nftRegistry = IERC721(nftAddress);
-//         MarketItem memory item = idToMarketItem[assetId];
-
-//         require(item.id != 0, "Asset not published");
-//         require(item.status == ItemStatus.LIST, "Asset is not list to buy");
-
-//         address seller = item.seller;
-
-//         require(seller != address(0), "Invalid address");
-//         require(priceAnta >= item.priceAnta, "price need equal listing price");
-
-//         uint256 fee = (antaFeePercent * priceAnta) / 100;
-//         uint256 remainAmount = priceAnta - fee;
-//         sqfToken.transferFrom(sender, address(this), fee);
-//         sqfToken.transferFrom(sender, seller, remainAmount);
-//         nftRegistry.safeTransferFrom(address(this), sender, assetId);
-
-//         idToMarketItem[assetId].seller = sender;
-//         idToMarketItem[assetId].status = ItemStatus.BOUGHT;
-
-//         emit BuyItemSuccessful(
-//             item.id,
-//             assetId,
-//             seller,
-//             nftAddress,
-//             item.priceAnta,
-//             antaFeePercent,
-//             fee,
-//             sender,
-//             "ANTA",
-//             block.timestamp
-//         );
-//     }
+    function _safeBuyItem(uint256 itemId,uint256 amount, uint256 tokenId ) private { 
+        mainToken.transferFrom(address(msg.sender), idToMarketItem[itemId].seller , amount);
+        factory.setOwnerIngameItem(address(this), address(msg.sender), tokenId);
+        mainNFTs.transferFrom(address(this), address(msg.sender), tokenId);
+    }
 
     function _requireERC721(address nftAddress) internal view {
         require(
@@ -744,31 +705,5 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
     }
     return (size > 0);
 }
-// function _createItem(
-//         address seller,
-//         uint256 assetId,
-//         address nftAddress,
-//         uint256 price,
-//         uint256 priceAnta
-//     ) internal {
-//         bytes32 itemId = keccak256(
-//             abi.encodePacked(
-//                 block.timestamp,
-//                 seller,
-//                 assetId,
-//                 nftAddress,
-//                 price
-//             )
-//         );
 
-//         idToMarketItem[assetId] = Item({
-//             id: itemId,
-//             seller: seller,
-//             nftAddress: nftAddress,
-//             price: price,
-//             priceAnta: priceAnta,
-//             status: ItemStatus.LIST
-//         });
-//     }
-// }
 }

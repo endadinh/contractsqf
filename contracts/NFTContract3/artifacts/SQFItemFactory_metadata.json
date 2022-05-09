@@ -256,7 +256,7 @@
 						"type": "uint256"
 					}
 				],
-				"name": "getItemsByItemId",
+				"name": "getIngameItem",
 				"outputs": [
 					{
 						"components": [
@@ -725,11 +725,11 @@
 			]
 		},
 		"contracts/NFTContract3/SQFIFactory.sol": {
-			"keccak256": "0xa95be5d78acfa1e1176c9e8d720426a6be413df0b5e97d3d3ea078c564bc8c90",
+			"keccak256": "0x8a129e631062c8146ac8b0c41dc0de176a37a40a1c70cb29f1a40924a3592f07",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://2ca3f9f83ce4be9be9a7670a94f9197c37bf9d40c8726df06efd86a78a297990",
-				"dweb:/ipfs/QmUBsbBLStouNGuVCSrCYqZK7JwGNzusaCr5Dw1iDHkJkv"
+				"bzz-raw://ca0e8288f6405bca904a12f7a19a83a6ca51a65a9afe7c68d1b20ba9f0d12098",
+				"dweb:/ipfs/QmX4BixH5gSXdrQWDyLyyVeNmYE5JQGHT6mTzQieWfscrS"
 			]
 		},
 		"contracts/NFTContract3/SQFNFT.sol": {

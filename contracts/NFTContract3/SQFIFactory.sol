@@ -33,6 +33,7 @@ contract SQFItemFactory is FactoryStorage, Ownable
     function setSQFToken(address _address) external onlyOwner {
         sqfToken = IERC20(_address);
     }
+    
 
     function safeMintItem(string memory itemId, string memory externalId) public { 
         require(
@@ -51,7 +52,7 @@ contract SQFItemFactory is FactoryStorage, Ownable
 
     }
 
-    function setOwnerIngameItem(address from,address newOwner, uint256 tokenId) public  { 
+    function setOwnerIngameItem(address from,address newOwner, uint256 tokenId) external  { 
             require(from == ingameItem[tokenId].owner, "Only owner of token can do this");
             ingameItem[tokenId].owner = newOwner;
     }
@@ -90,12 +91,10 @@ contract SQFItemFactory is FactoryStorage, Ownable
         return items;
     }
 
-    function getItemsByItemId(uint itemId) public view returns (ingameItems memory) {
+    function getIngameItem(uint itemId) public view returns (ingameItems memory) {
         ingameItems memory item = ingameItem[itemId];
         return item;
     }
-
-    
      
     function activeAccount(string memory typeAccount) public { 
 

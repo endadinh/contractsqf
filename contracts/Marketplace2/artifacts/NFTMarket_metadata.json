@@ -23,7 +23,7 @@
 						"type": "address"
 					}
 				],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "constructor"
 			},
 			{
@@ -31,14 +31,14 @@
 				"inputs": [
 					{
 						"indexed": false,
-						"internalType": "bytes32",
-						"name": "id",
-						"type": "bytes32"
+						"internalType": "uint256",
+						"name": "itemId",
+						"type": "uint256"
 					},
 					{
 						"indexed": true,
 						"internalType": "uint256",
-						"name": "assetId",
+						"name": "tokenId",
 						"type": "uint256"
 					},
 					{
@@ -49,26 +49,8 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "address",
-						"name": "nftAddress",
-						"type": "address"
-					},
-					{
-						"indexed": false,
 						"internalType": "uint256",
 						"name": "price",
-						"type": "uint256"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint8",
-						"name": "feePercent",
-						"type": "uint8"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint256",
-						"name": "fee",
 						"type": "uint256"
 					},
 					{
@@ -263,50 +245,12 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "address payable",
+						"internalType": "address",
 						"name": "seller",
 						"type": "address"
 					},
 					{
-						"internalType": "address payable",
-						"name": "owner",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "price",
-						"type": "uint256"
-					},
-					{
-						"internalType": "enum MarketplaceStorage.ItemStatus",
-						"name": "status",
-						"type": "uint8"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "allMarketItems",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "itemId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "tokenId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "address payable",
-						"name": "seller",
-						"type": "address"
-					},
-					{
-						"internalType": "address payable",
+						"internalType": "address",
 						"name": "owner",
 						"type": "address"
 					},
@@ -365,7 +309,7 @@
 				],
 				"name": "createMarketItem",
 				"outputs": [],
-				"stateMutability": "payable",
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -413,59 +357,8 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "itemId",
-						"type": "uint256"
-					}
-				],
-				"name": "fetchMarketItem",
-				"outputs": [
-					{
-						"components": [
-							{
-								"internalType": "uint256",
-								"name": "itemId",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "tokenId",
-								"type": "uint256"
-							},
-							{
-								"internalType": "address payable",
-								"name": "seller",
-								"type": "address"
-							},
-							{
-								"internalType": "address payable",
-								"name": "owner",
-								"type": "address"
-							},
-							{
-								"internalType": "uint256",
-								"name": "price",
-								"type": "uint256"
-							},
-							{
-								"internalType": "enum MarketplaceStorage.ItemStatus",
-								"name": "status",
-								"type": "uint8"
-							}
-						],
-						"internalType": "struct MarketplaceStorage.MarketItem",
-						"name": "",
-						"type": "tuple"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
 				"inputs": [],
-				"name": "fetchMarketItems",
+				"name": "getMarketItem",
 				"outputs": [
 					{
 						"components": [
@@ -480,57 +373,12 @@
 								"type": "uint256"
 							},
 							{
-								"internalType": "address payable",
+								"internalType": "address",
 								"name": "seller",
 								"type": "address"
 							},
 							{
-								"internalType": "address payable",
-								"name": "owner",
-								"type": "address"
-							},
-							{
-								"internalType": "uint256",
-								"name": "price",
-								"type": "uint256"
-							},
-							{
-								"internalType": "enum MarketplaceStorage.ItemStatus",
-								"name": "status",
-								"type": "uint8"
-							}
-						],
-						"internalType": "struct MarketplaceStorage.MarketItem",
-						"name": "",
-						"type": "tuple"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "fetchMyNFTs",
-				"outputs": [
-					{
-						"components": [
-							{
-								"internalType": "uint256",
-								"name": "itemId",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "tokenId",
-								"type": "uint256"
-							},
-							{
-								"internalType": "address payable",
-								"name": "seller",
-								"type": "address"
-							},
-							{
-								"internalType": "address payable",
+								"internalType": "address",
 								"name": "owner",
 								"type": "address"
 							},
@@ -548,25 +396,6 @@
 						"internalType": "struct MarketplaceStorage.MarketItem[]",
 						"name": "",
 						"type": "tuple[]"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "tokenId",
-						"type": "uint256"
-					}
-				],
-				"name": "getAlalalalala",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
 					}
 				],
 				"stateMutability": "view",
@@ -595,12 +424,12 @@
 								"type": "uint256"
 							},
 							{
-								"internalType": "address payable",
+								"internalType": "address",
 								"name": "seller",
 								"type": "address"
 							},
 							{
-								"internalType": "address payable",
+								"internalType": "address",
 								"name": "owner",
 								"type": "address"
 							},
@@ -626,11 +455,6 @@
 			{
 				"inputs": [
 					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					},
-					{
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
@@ -649,12 +473,12 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "address payable",
+						"internalType": "address",
 						"name": "seller",
 						"type": "address"
 					},
 					{
-						"internalType": "address payable",
+						"internalType": "address",
 						"name": "owner",
 						"type": "address"
 					},
@@ -721,6 +545,57 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					}
+				],
+				"name": "sellItemNeee",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "id",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address",
+								"name": "owner",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "itemId",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "externalId",
+								"type": "string"
+							},
+							{
+								"internalType": "bool",
+								"name": "ingame",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct StructLib.ingameItems",
+						"name": "",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "_address",
 						"type": "address"
@@ -755,25 +630,6 @@
 				"name": "setMainToken",
 				"outputs": [],
 				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "tokenId",
-						"type": "uint256"
-					}
-				],
-				"name": "testView",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -828,11 +684,11 @@
 	},
 	"sources": {
 		"contracts/Marketplace2/Marketplace.sol": {
-			"keccak256": "0x7225589fc6d5f9dbc7c53b6059fe4a97f6d758e60b2d75f0e8f0df344e70db15",
+			"keccak256": "0xb425ec1afbde21ec954bd57a48ab1a314ef37631500fccd30dad41e4a3897323",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0a512d9185eb2cb3f8a6e94fbaaebe4937be52f86adb726fe043eb138c55f65b",
-				"dweb:/ipfs/Qmc2i94zbgc1ncQvNgRsQN69bZk3a8bYpwDp94adpn5igz"
+				"bzz-raw://7f80508f5e91f79110f8ebf5d117c8c8ee7f8de72622cf9a78e2b91b18ebf614",
+				"dweb:/ipfs/QmQsGMxYPxMJAYLZb4Yf3VQ5cajPYY1TuhnRtChEVkcgsG"
 			]
 		}
 	},
