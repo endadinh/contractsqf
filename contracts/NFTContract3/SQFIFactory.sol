@@ -9,10 +9,11 @@ import "./SQFNFT.sol";
 
 
 pragma solidity ^0.8.4;
-
 contract SQFItemFactory is FactoryStorage, Ownable
 
 {
+
+    
     address public nftContract;
     uint256 public goblinActivePrice;
     uint256 public devilActivePrice;
@@ -29,12 +30,9 @@ contract SQFItemFactory is FactoryStorage, Ownable
         devilActivePrice = 1000*10**18;
         angelActivePrice = 1500*10**18;
     }
-
     function setSQFToken(address _address) external onlyOwner {
         sqfToken = IERC20(_address);
     }
-    
-
     function safeMintItem(string memory itemId, string memory externalId) public { 
         require(
             userStatus[msg.sender].status != activeStatus.HUMAN,
@@ -49,7 +47,6 @@ contract SQFItemFactory is FactoryStorage, Ownable
             externalId,
             false
         );
-
     }
 
     function setOwnerIngameItem(address from,address newOwner, uint256 tokenId) external  { 

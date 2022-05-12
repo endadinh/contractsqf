@@ -85,7 +85,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/NFTContract3/Market.sol": "Ownable"
+			"contracts/NFTContract3/Ownable.sol": "Ownable"
 		},
 		"evmVersion": "london",
 		"libraries": {},
@@ -99,12 +99,20 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/NFTContract3/Market.sol": {
-			"keccak256": "0x6efd4aa917b38ca128c6da2c0a4fbbb0f6fff601ac517899632bf9a95cb7da71",
+		"contracts/NFTContract3/Context.sol": {
+			"keccak256": "0x2d9821ede311a3c16183811be8bdc666e88c69d9d50321e3dff025fe7630d373",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e2a4abeff1712129b8437afa688c7f856ac647887766955b111036f49f83e223",
-				"dweb:/ipfs/QmZkq6Ks8FNjgiXSs8u98ErkEa5eeUF9B4jX5Bp5JQdWpq"
+				"bzz-raw://3719bc7fe267a79e84641b88901b10dbc58d27edaea65b7811d39ca7d2a3e409",
+				"dweb:/ipfs/QmRDDpaByM3MhWs61gXmfaxoygifCJhLvguEFDGahhWMfX"
+			]
+		},
+		"contracts/NFTContract3/Ownable.sol": {
+			"keccak256": "0x28adb5f006cef52b73b613db99d0bc113d7b129a021e594dfdcf50225f260b3f",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://3789666515f95aea6d9d3ebdbc25d7434182ba5599a7c2823ddd51bc5b6a0174",
+				"dweb:/ipfs/QmSjW9pxWLnwqYKptEVQkxB8UWk99HuDGMZa6NjMBFoy5o"
 			]
 		}
 	},
