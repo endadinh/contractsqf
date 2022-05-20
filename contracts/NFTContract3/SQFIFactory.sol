@@ -13,7 +13,6 @@ contract SQFItemFactory is FactoryStorage, Ownable
 
 {
 
-    
     address public nftContract;
     uint256 public goblinActivePrice;
     uint256 public devilActivePrice;

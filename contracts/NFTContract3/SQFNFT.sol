@@ -28,8 +28,8 @@ contract SQFItem is
     event NFTMinted(
         uint256 tokenId,
         address indexed to,
-        string itemId
-        // string externalId
+        string itemId,
+        string externalId
     );
 
     constructor(address _holder) ERC721("SQFItem", "SQFI") {
