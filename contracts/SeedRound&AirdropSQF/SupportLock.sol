@@ -19,19 +19,23 @@ contract SupportLockToken is Ownable {
     uint256 public _tokenForPartner;    
     uint256 public _tokenForEcosystem;    
     uint256 public _tokenForReserve;    
-    uint256 public _tokenForMarketing;    
+    uint256 public _tokenForMarketing;
+	uint256 public _tokenForLiquidity;    
 
     uint256 public _unlockedTokenForTeam;
     uint256 public _unlockedTokenForPartner;
     uint256 public _unlockedTokenForEcosystem;
     uint256 public _unlockedTokenForReserve;
     uint256 public _unlockedTokenForMarketing;
+    uint256 public _unlockedTokenForLiquidity;
+
 
     bool _isMintedTeam = false;
     bool _isMintedPartner = false;
     bool _isMintedEcosystem = false;
     bool _isMintedReserve = false;
     bool _isMintedMarketing = false;
+	bool _isMintedLiquidity = false;
  
  	mapping(string => uint256) public claimedPercent;
     
@@ -42,8 +46,9 @@ contract SupportLockToken is Ownable {
         _tokenForEcosystem = _totalSupply.mul(20).div(100);
         _tokenForReserve = _totalSupply.mul(10).div(100);
         _tokenForMarketing = _totalSupply.mul(272).div(1000); 
+        _tokenForLiquidity = _totalSupply.mul(80).div(1000); 
 		_Note = block.timestamp;
-		_openBlockArr[0] = _Note.add(1*60);
+		_openBlockArr[0] = _Note.add(60);
 		_openBlockArr[1] = _Note.add(2*60);
 		_openBlockArr[2] = _Note.add(3*60);
 		_openBlockArr[3] = _Note.add(4*60);
@@ -109,6 +114,17 @@ contract SupportLockToken is Ownable {
 		claimedPercent["Marketing"] = 10;
         _isMintedMarketing = true;
 		emit MintedToken(address(owner()), _tokenForMarketing);
+
+
+	}
+	function mintTokenToLiquidity() public onlyOwner { 
+        require(!_isMintedLiquidity, "Minted Token for Liquidity");
+		_mainToken.mintFrozenTokens(address(owner()), _tokenForLiquidity); 
+		_mainToken.meltTokens(address(owner()), (_tokenForLiquidity));
+		claimedPercent["Liquidity"] = 100;
+		_unlockedTokenForLiquidity = _unlockedTokenForLiquidity.add(_tokenForLiquidity);
+        _isMintedLiquidity = true;
+		emit MintedToken(address(owner()), _tokenForLiquidity);
 
 	}
 

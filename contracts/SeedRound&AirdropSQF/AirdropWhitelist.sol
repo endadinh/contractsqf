@@ -50,7 +50,7 @@ contract Airdrop is Ownable {
        
         for (uint i = 0; i < _recipients.length; i++) {
             require(_recipients[i] != address(0));
-            require(Token(tokenAddr).transfer(_recipients[i], _amount[i]));
+            require(_mainToken.transfer(_recipients[i], _amount[i]));
         }
 
         return true;

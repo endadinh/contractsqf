@@ -1,3 +1,7 @@
+/**
+ *Submitted for verification at BscScan.com on 2022-05-06
+*/
+
 pragma solidity ^0.6.0;
 
 
@@ -654,7 +658,7 @@ contract ERC20 is Context, IERC20, AccountFrozenBalances, Ownable, Meltable {
 pragma solidity 0.6.12;
 
 // Token with Governance.
-contract SQFToken is ERC20("Sancti Quest On Frontline", "SQF", 333.333333333*10**9*10**18, 2.666666666*10**9*10**18) {
+contract SQFToken is ERC20("Sancti Quest On Frontline", "SQF", 333.333333333*10**9*10**18, 255.466666666*10**9*10**18) {
 	address public feeaddr;
 	uint256 public transferFeeRate;
 	
