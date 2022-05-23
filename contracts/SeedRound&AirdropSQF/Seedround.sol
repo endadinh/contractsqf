@@ -28,8 +28,8 @@ contract SupportSaleSeedRound is Ownable {
 		_saleStatus = true;
 		_tokenPrice = 3 * 10 ** 13;
 		_minimum = 500 * 10 ** 18;
-		_openSaleBlock = block.timestamp.add(35*60);
-		_endSaleBlock = block.timestamp.add(30*24*60*60);
+		_openSaleBlock = block.timestamp;
+		_endSaleBlock = block.timestamp.add(3*60);
 		_openBlockArr[0] = _endSaleBlock.add(6*60);
 		_openBlockArr[1] = _endSaleBlock.add(7*60);
 		_openBlockArr[2] = _endSaleBlock.add(8*60);
@@ -65,11 +65,30 @@ contract SupportSaleSeedRound is Ownable {
 		_saledToken = _saledToken.add(totalToken * 10 ** 18);
 		buyedToken[recipient] = buyedToken[recipient].add(totalToken * 10 ** 18);
 		buyedBUSD[recipient] = buyedBUSD[recipient].add(_amount);
+		bool isAvail = checkAvail(recipient);
+		if(	isAvail == false ) {
 		_whiteList.push(recipient);
+		}
 		claimedPercent[recipient] = 3;
 		emit BuySeedRound(address(msg.sender),totalToken);
 
 	}
+
+	function getWhiteList() public view returns (address[] memory) { 
+		return _whiteList;
+	}
+
+	function checkAvail(address inputAddress) public view returns (bool) { 
+		bool isAvail = false;
+		for (uint i = 0; i < _whiteList.length; i++ ) { 
+			if(inputAddress == _whiteList[i]) { 
+				isAvail = true;
+				break;
+				// return true;
+			}
+		}
+		return isAvail;
+ 	}
 
 	function checkTimeUnlockPercent () public view returns (uint256){
 		uint256 checkNumber = block.timestamp;
@@ -105,7 +124,6 @@ contract SupportSaleSeedRound is Ownable {
 					emit UnlockSeedToken(_whiteList[i], tokenUnlock);
 				}
         }
-		
         return true;
 	}
 
