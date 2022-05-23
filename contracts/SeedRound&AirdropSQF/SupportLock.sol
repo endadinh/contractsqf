@@ -46,32 +46,32 @@ contract SupportLockToken is Ownable {
         _tokenForEcosystem = _totalSupply.mul(20).div(100);
         _tokenForReserve = _totalSupply.mul(10).div(100);
         _tokenForMarketing = _totalSupply.mul(272).div(1000); 
-        _tokenForLiquidity = _totalSupply.mul(80).div(1000); 
+        _tokenForLiquidity = _totalSupply.mul(8).div(1000); 
 		_Note = block.timestamp;
-		_openBlockArr[0] = _Note.add(60);
-		_openBlockArr[1] = _Note.add(2*60);
-		_openBlockArr[2] = _Note.add(3*60);
-		_openBlockArr[3] = _Note.add(4*60);
-		_openBlockArr[4] = _Note.add(5*60);
-		_openBlockArr[5] = _Note.add(6*60);
-		_openBlockArr[6] = _Note.add(7*60);
-		_openBlockArr[7] = _Note.add(8*60);
-		_openBlockArr[8] = _Note.add(9*60);
-		_openBlockArr[9] = _Note.add(10*60); 
-		_openBlockArr[10] = _Note.add(11*60);
-		_openBlockArr[11] = _Note.add(12*60);
-		_openBlockArr[12] = _Note.add(13*60);
-		_openBlockArr[13] = _Note.add(14*60);
-		_openBlockArr[14] = _Note.add(15*60);
-		_openBlockArr[15] = _Note.add(16*60);
-		_openBlockArr[16] = _Note.add(17*60);
-		_openBlockArr[17] = _Note.add(18*60);
-        _openBlockArr[18] = _Note.add(19*60);
-		_openBlockArr[19] = _Note.add(20*60);
-		_openBlockArr[20] = _Note.add(21*60);
-		_openBlockArr[21] = _Note.add(22*60);
-		_openBlockArr[22] = _Note.add(23*60);
-		_openBlockArr[23] = _Note.add(24*60);
+		_openBlockArr[0] = _Note.add(5*60);
+		_openBlockArr[1] = _Note.add(10*60);
+		_openBlockArr[2] = _Note.add(15*60);
+		_openBlockArr[3] = _Note.add(20*60);
+		_openBlockArr[4] = _Note.add(21*60);
+		_openBlockArr[5] = _Note.add(22*60);
+		_openBlockArr[6] = _Note.add(23*60);
+		_openBlockArr[7] = _Note.add(24*60);
+		_openBlockArr[8] = _Note.add(25*60);
+		_openBlockArr[9] = _Note.add(26*60); 
+		_openBlockArr[10] = _Note.add(27*60);
+		_openBlockArr[11] = _Note.add(28*60);
+		_openBlockArr[12] = _Note.add(29*60);
+		_openBlockArr[13] = _Note.add(30*60);
+		_openBlockArr[14] = _Note.add(31*60);
+		_openBlockArr[15] = _Note.add(32*60);
+		_openBlockArr[16] = _Note.add(33*60);
+		_openBlockArr[17] = _Note.add(34*60);
+        _openBlockArr[18] = _Note.add(35*60);
+		_openBlockArr[19] = _Note.add(36*60);
+		_openBlockArr[20] = _Note.add(37*60);
+		_openBlockArr[21] = _Note.add(38*60);
+		_openBlockArr[22] = _Note.add(39*60);
+		_openBlockArr[23] = _Note.add(40*60);
 
     }
 
@@ -109,9 +109,11 @@ contract SupportLockToken is Ownable {
 
     function mintTokenToMarketing() public onlyOwner { 
         require(!_isMintedMarketing, "Minted Token for Marketing");
-		_mainToken.mintFrozenTokens(address(owner()), _tokenForMarketing); 
+		uint256 tokenForRef = _tokenForMarketing.mul(5).div(100);
+		_mainToken.mintFrozenTokens(address(owner()), _tokenForMarketing.sub(tokenForRef)); 
 		_mainToken.meltTokens(address(owner()), (_tokenForMarketing).mul(5).div(100));
 		claimedPercent["Marketing"] = 10;
+		_unlockedTokenForMarketing = _unlockedTokenForMarketing.add(_tokenForMarketing.mul(5).div(100));
         _isMintedMarketing = true;
 		emit MintedToken(address(owner()), _tokenForMarketing);
 
@@ -194,6 +196,7 @@ contract SupportLockToken is Ownable {
 		}else if (_openBlockArr[1] <= checkNumber && checkNumber < _openBlockArr[2]){
 			return 154;
 		}else if (_openBlockArr[2] <= checkNumber && checkNumber < _openBlockArr[3]){
+
 			return 248;
 		}else if (_openBlockArr[3] <= checkNumber && checkNumber < _openBlockArr[4]){
 			return 342;
