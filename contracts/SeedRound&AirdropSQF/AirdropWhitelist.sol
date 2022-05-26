@@ -8,43 +8,50 @@ contract Airdrop is Ownable {
     using SafeMath for uint256;
 	using Address for address;
 
-	IERC20 public _BUSD;
     SQFToken public _mainToken;
-	uint256 public _maxTokenSale;
-	uint256 public _saledToken;
-	bool public _saleStatus;
-	uint256 public _tokenPrice;  // token pre-sale price in BNB
-	uint256 public _endSaleBlock ;
-	uint[10] public _openBlockArr;
+	uint256 public _maxTokenAirdrop;
+	uint256 public _droppedToken;  // token pre-sale price in BNB
     address[] public whiteList;
 
     mapping(address => bool) public isWhiteList;
-    mapping(address => uint256) public buyedToken;
-	mapping(address => uint256) public buyedBUSD;
-	mapping(address => uint256) public claimedPercent;
+    mapping(address => bool) public isClaimed;
+    mapping(address => bool) public isTopRefferal;
+
+    event LogWhitelisted(address _investor, uint256 _timestamp);
+    event logTopRefferal(address _investor, uint256 _timestamp);
     
     constructor(address _token) public {
 		_mainToken = SQFToken(_token);
-		_maxTokenSale = 2*10**4*10**18;
-		_saledToken = 0;
-		_saleStatus = true;
-		_tokenPrice = 38 * 10 ** 12;
-		// _endSaleBlock = block.timestamp.add(2*60*60);
-		// _openBlockArr[0] = _endSaleBlock.add(15*60);
-		// _openBlockArr[1] = _endSaleBlock.add(30*60);
-		// _openBlockArr[2] = _endSaleBlock.add(45*60);
-		// _openBlockArr[3] = _endSaleBlock.add(60*60);
-		// _openBlockArr[4] = _endSaleBlock.add(75*60);
-		// _openBlockArr[5] = _endSaleBlock.add(90*60);
-		// _openBlockArr[6] = _endSaleBlock.add(105*60);
-		// _openBlockArr[7] = _endSaleBlock.add(120*60);
-		// _openBlockArr[8] = _endSaleBlock.add(135*60);
-	
+		_maxTokenAirdrop = 2*10**4*10**18;
+		_droppedToken = 0;
     }
 
-    // constructor(address _tokenAddr) public {
-    //     tokenAddr = _tokenAddr;
-    // }
+
+    function whitelist(address[] calldata _investorAddresses) external onlyOwner {
+        for (uint i = 0; i < _investorAddresses.length; i++) {
+            if(!isWhiteList[_investorAddresses[i]]) { 
+                isWhiteList[_investorAddresses[i]] = true;
+                isClaimed[_investorAddresses[i]] = false;
+            }
+            emit LogWhitelisted(_investorAddresses[i], now);
+        }
+    }
+
+    function claimTokens() external {
+        require(isWhiteList[msg.sender], "Can't perform airdrop !");
+        require(!isClaimed[msg.sender], "Claimed Token");
+        isClaimed[msg.sender] = true;
+        // Token.transfer(msg.sender, 1000);
+    } 
+
+    function checkWhiteList(address hehe) public view returns(bool) { 
+        return isWhiteList[hehe];
+    }
+
+    function checkClaimed(address hehe ) public view returns (bool) { 
+        return isClaimed[hehe];
+    }
+
 
     function dropTokens(address[] memory _recipients, uint256[] memory _amount) public onlyOwner returns (bool) {
        
@@ -55,38 +62,5 @@ contract Airdrop is Ownable {
 
         return true;
     }
-
-    // function dropEther(address[] memory _recipients, uint256[] memory _amount) public payable onlyOwner returns (bool) {
-    //     uint total = 0;
-
-    //     for(uint j = 0; j < _amount.length; j++) {
-    //         total = total.add(_amount[j]);
-    //     }
-
-    //     require(total <= msg.value);
-    //     require(_recipients.length == _amount.length);
-
-
-    //     for (uint i = 0; i < _recipients.length; i++) {
-    //         require(_recipients[i] != address(0));
-
-    //         payable(_recipients[i]).transfer(_amount[i]);
-
-    //         emit EtherTransfer(_recipients[i], _amount[i]);
-    //     }
-
-    //     return true;
-    // }
-
-    // function updateTokenAddress(address newTokenAddr) public onlyOwner {
-    //     tokenAddr = newTokenAddr;
-    // }
-
-    // function withdrawTokens(address beneficiary) public onlyOwner {
-    //     require(Token(tokenAddr).transfer(beneficiary, Token(tokenAddr).balanceOf(address(this))));
-    // }
-
-    // function withdrawEther(address payable beneficiary) public onlyOwner {
-    //     beneficiary.transfer(address(this).balance);
-    // }
 }
+// ["0x5B38Da6a701c568545dCfcB03FcB875f56beddC4","0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2","0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db"]
