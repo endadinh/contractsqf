@@ -6,16 +6,16 @@ import "./ERC721.sol";
 import "./ERC721Enumerable.sol";
 import "./ERC721URIStorage.sol";
 import "./Pausable.sol";
-import "./AccessControl.sol";
 import "./Counters.sol";
 import "./SafeMath.sol";
+import "./Ownable.sol";
 
 contract CyberTiger is
     ERC721,
     ERC721Enumerable,
     ERC721URIStorage,
     Pausable,
-    AccessControl
+    Ownable
 {
 
     using SafeMath for uint256;
@@ -62,9 +62,39 @@ contract CyberTiger is
 
     function changeBaseURI(string memory _newURI)
         public
-        onlyRole(DEFAULT_ADMIN_ROLE)
+        onlyOwner
     {
         _URI = _newURI;
+    }
+
+    function setMinterRole(address to) public onlyOwner returns (bool) { 
+        MINTER_ROLE[to] = true;
+        return true;
+    }
+
+    function setPauserRole(address to) public onlyOwner returns (bool) { 
+        PAUSER_ROLE[to] = true;
+        return true;
+    }
+
+    function setHydraRole(address to) public onlyOwner returns (bool) { 
+        HYDRA_ROLE[to] = true;
+        return true;
+    }
+
+    function unSetMinterRole(address to) public onlyOwner returns (bool) { 
+        MINTER_ROLE[to] = false;
+        return false;
+    }
+
+    function unSetPauserRole(address to) public onlyOwner returns (bool) { 
+        PAUSER_ROLE[to] = false;
+        return false;
+    }
+
+    function unSetHydraRole(address to) public onlyOwner returns (bool) { 
+        HYDRA_ROLE[to] = false;
+        return false;
     }
 
     function pause() public onlyPauser {
@@ -151,9 +181,10 @@ contract CyberTiger is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable, AccessControl)
+        override(ERC721, ERC721Enumerable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
     }
+
 }

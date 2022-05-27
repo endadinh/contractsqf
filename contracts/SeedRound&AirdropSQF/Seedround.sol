@@ -5,61 +5,40 @@ contract SupportSaleSeedRound is Ownable {
     using SafeMath for uint256;
 	using Address for address;
 
-	IERC20 public _BUSD;
     SQFToken public _tokenSale;
 	uint public _maxTokenSale;
 	uint256 public _saledToken;
-	bool public _saleStatus;
 	uint256 public _tokenPrice;  // token pre-sale price in BUSD
 	uint256 public _endSaleBlock ;
-	uint256 public _openSaleBlock;
-	uint256 public _minimum;
-	address[] public _whiteList;
 	uint[10] public _openBlockArr;
+	uint public totalWhiteList = 0;
+
+
     mapping(address => uint256) public buyedToken;
 	mapping(address => uint256) public buyedBUSD;
 	mapping(address => uint256) public claimedPercent;
+	mapping(uint256 => address) public _whiteList;
     
     constructor(address _token) public {
-		_BUSD = IERC20(address(0x1482717Eb2eA8Ecd81d2d8C403CaCF87AcF04927));
 		_tokenSale = SQFToken(_token) ;
 		_maxTokenSale = 3.33333333333 * 10 ** 9 *10 ** 18;
 		_saledToken = 0;
-		_saleStatus = true;
 		_tokenPrice = 3 * 10 ** 13;
-		_minimum = 500 * 10 ** 18;
-		_openSaleBlock = block.timestamp;
-		_endSaleBlock = block.timestamp.add(3*60);
-		_openBlockArr[0] = _endSaleBlock.add(6*60);
-		_openBlockArr[1] = _endSaleBlock.add(7*60);
-		_openBlockArr[2] = _endSaleBlock.add(8*60);
-		_openBlockArr[3] = _endSaleBlock.add(9*60);
-		_openBlockArr[4] = _endSaleBlock.add(10*60);
-		_openBlockArr[5] = _endSaleBlock.add(11*60);
-		_openBlockArr[6] = _endSaleBlock.add(12*60);
-		_openBlockArr[7] = _endSaleBlock.add(13*60);
-		_openBlockArr[8] = _endSaleBlock.add(14*60);
-	}
-
-	function buyByBUSD(uint256 _amount) public payable { 
-		uint256 totalToken = _amount.div(_tokenPrice);
-		require(_openSaleBlock < block.timestamp, "Seed round not availble now ");
-		require(_endSaleBlock > block.timestamp , "Pre-sale ended .");
-		require( _saledToken.add(totalToken * 10 ** 18) < _maxTokenSale , "Token soled out .");
-		require(_amount > _minimum, "require minimum BUSD .");
-		address payable owner = payable(this.owner());
-		_BUSD.transferFrom(msg.sender, owner, _amount);
-		_tokenSale.mintFrozenTokens(address(msg.sender), totalToken * 10 ** 18); 
-		_tokenSale.meltTokens(address(msg.sender), (totalToken * 10 ** 18).mul(3).div(100));
-		_saledToken = _saledToken.add(totalToken * 10 ** 18);
-		buyedToken[msg.sender] = buyedToken[msg.sender].add(totalToken * 10 ** 18);
-		buyedBUSD[msg.sender] = buyedBUSD[msg.sender].add(_amount);
-		claimedPercent[msg.sender] = 3;
-		emit BuySeedRound(address(msg.sender), totalToken);
+		_endSaleBlock = block.timestamp.add(18*24*3600);
+		_openBlockArr[0] = _endSaleBlock.add(30*24*3600);
+		_openBlockArr[1] = _endSaleBlock.add(60*24*3600);
+		_openBlockArr[2] = _endSaleBlock.add(90*24*3600);
+		_openBlockArr[3] = _endSaleBlock.add(120*24*3600);
+		_openBlockArr[4] = _endSaleBlock.add(150*24*3600);
+		_openBlockArr[5] = _endSaleBlock.add(180*24*3600);
+		_openBlockArr[6] = _endSaleBlock.add(210*24*3600);
+		_openBlockArr[7] = _endSaleBlock.add(240*24*3600);
+		_openBlockArr[8] = _endSaleBlock.add(270*24*3600);
 	}
 
 	function adminMintWhitelist(address recipient, uint256 _amount) public onlyOwner { 
 		uint256 totalToken = _amount.div(_tokenPrice);
+		require(totalToken*10**18 < _maxTokenSale, "Maximum Token Saled for Seedround");
 		_tokenSale.mintFrozenTokens(recipient, totalToken * 10 ** 18); 
 		_tokenSale.meltTokens(recipient, (totalToken * 10 ** 18).mul(3).div(100));
 		_saledToken = _saledToken.add(totalToken * 10 ** 18);
@@ -67,20 +46,17 @@ contract SupportSaleSeedRound is Ownable {
 		buyedBUSD[recipient] = buyedBUSD[recipient].add(_amount);
 		bool isAvail = checkAvail(recipient);
 		if(	isAvail == false ) {
-		_whiteList.push(recipient);
+		_whiteList[totalWhiteList] = recipient;
+		totalWhiteList++;
 		}
 		claimedPercent[recipient] = 3;
 		emit BuySeedRound(address(msg.sender),totalToken);
 
 	}
 
-	function getWhiteList() public view returns (address[] memory) { 
-		return _whiteList;
-	}
-
 	function checkAvail(address inputAddress) public view returns (bool) { 
 		bool isAvail = false;
-		for (uint i = 0; i < _whiteList.length; i++ ) { 
+		for (uint i = 0; i < totalWhiteList; i++ ) { 
 			if(inputAddress == _whiteList[i]) { 
 				isAvail = true;
 				break;
@@ -113,41 +89,23 @@ contract SupportSaleSeedRound is Ownable {
 		}
 	}
 
-	function adminUnlockWhiteList() public onlyOwner returns (bool)  {
-
-		for (uint i = 0; i < _whiteList.length; i++) {
-				uint256 checkPercent = checkTimeUnlockPercent();
+	function adminUnlockWhiteList() public onlyOwner {
+		uint256 checkPercent = checkTimeUnlockPercent();
+		require( claimedPercent[_whiteList[0]] < checkPercent , "Claimed All token !!! ");
+		for (uint256 i = 0; i < totalWhiteList; i++) {
 				if(claimedPercent[_whiteList[i]] < 100 && checkPercent > claimedPercent[_whiteList[i]]) { 
-					uint256 tokenUnlock = buyedToken[_whiteList[i]] * (checkPercent - claimedPercent[_whiteList[i]]) / 100;
-					_tokenSale.meltTokens(address(_whiteList[i]), tokenUnlock );
-					claimedPercent[_whiteList[i]] = claimedPercent[_whiteList[i]].add( (checkPercent - claimedPercent[_whiteList[i]]));
+					uint256 tokenUnlock = (buyedToken[_whiteList[i]] * (checkPercent - claimedPercent[_whiteList[i]]) / 100);
+					_tokenSale.meltTokens(_whiteList[i], tokenUnlock);
+					claimedPercent[_whiteList[i]] = claimedPercent[_whiteList[i]].add((checkPercent - claimedPercent[_whiteList[i]]));
 					emit UnlockSeedToken(_whiteList[i], tokenUnlock);
 				}
         }
-        return true;
-	}
-
-	function unlockToken() public returns (bool) {
-		uint256 checkPercent = checkTimeUnlockPercent() ;
-		require(claimedPercent[msg.sender] < 100, "No locked token");
-		require(checkPercent > claimedPercent[msg.sender], "unlock maximum this time");
-
-		uint256 tokenUnlock = buyedToken[msg.sender] * (checkPercent - claimedPercent[msg.sender]) / 100;
-		_tokenSale.meltTokens(address(msg.sender), tokenUnlock );
-		claimedPercent[msg.sender] = claimedPercent[msg.sender].add( (checkPercent - claimedPercent[msg.sender]) );
-		emit UnlockSeedToken(msg.sender, tokenUnlock);
-		return true;
 	}
 
 	function set_Price(uint256 tokenPrice) public onlyOwner {
 		_tokenPrice = tokenPrice;
 	}
-
-	function set_SaleStatus(bool saleStatus) public onlyOwner {
-		_saleStatus = saleStatus;
-	}
  
-    
     event BuySeedRound(address indexed user, uint256 amount);
 	event UnlockSeedToken(address indexed user, uint256 amount);
 
