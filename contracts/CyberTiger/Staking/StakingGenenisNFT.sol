@@ -40,6 +40,7 @@ contract GenesisStaking {
         uint256 lastRewardPoints;
         uint256 rewardsEarned;
         uint256 rewardsReleased;
+        uint256 stakeTime;
     }
 
     /// @notice mapping of a staker to its current properties
@@ -79,7 +80,10 @@ contract GenesisStaking {
         uint256 contribution
     );
 
-    constructor(address _mainToken, address m) public {
+    constructor(address _mainToken, address _mainNFT) public{
+        rewardsToken = IERC20(_mainToken);
+        genesisNFT = IGenenisNFT(_mainNFT);
+        
     }
      /**
      * @dev Single gateway to intialize the staking contract after deploying
@@ -136,29 +140,30 @@ contract GenesisStaking {
 
     /// @notice Stake Genesis MONA NFT and earn reward tokens. 
     function stake(
-        uint256 tokenId
+        uint256 tokenId,
+        uint256 time
     )
         external
     {
-        _stake(msg.sender, tokenId);
+        _stake(msg.sender, tokenId,time);
     }
 
      /// @notice Stake multiple MONA NFTs and earn reward tokens. 
-    function stakeBatch(uint256[] memory tokenIds)
+    function stakeBatch(uint256[] memory tokenIds,uint256 time)
         external
     {
         for (uint i = 0; i < tokenIds.length; i++) {
-            _stake(msg.sender, tokenIds[i]);
+            _stake(msg.sender, tokenIds[i],time);
         }
     }
 
     /// @notice Stake all your MONA NFTs and earn reward tokens. 
-    function stakeAll()
+    function stakeAll(uint256 time)
         external
     {
         uint256 balance = genesisNFT.balanceOf(msg.sender);
         for (uint i = 0; i < balance; i++) {
-            _stake(msg.sender, genesisNFT.tokenOfOwnerByIndex(msg.sender,i));
+            _stake(msg.sender, genesisNFT.tokenOwnerByIndex(msg.sender,i),time);
         }
     }
 
@@ -170,7 +175,8 @@ contract GenesisStaking {
     */
     function _stake(
         address _user,
-        uint256 _tokenId
+        uint256 _tokenId,
+        uint256 time
     )
         internal
     {
@@ -185,6 +191,7 @@ contract GenesisStaking {
         stakedEthTotal = stakedEthTotal.add(amount);
         staker.tokenIds.push(_tokenId);
         staker.tokenIndex[staker.tokenIds.length - 1];
+        staker.stakeTime = time;
         tokenOwner[_tokenId] = _user;
         genesisNFT.safeTransferFrom(
             _user,

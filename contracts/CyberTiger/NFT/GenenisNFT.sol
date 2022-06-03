@@ -10,7 +10,7 @@ import "./Counters.sol";
 import "./SafeMath.sol";
 import "./Ownable.sol";
 
-contract CyberTiger is
+contract NFTGenesis is
     ERC721,
     ERC721Enumerable,
     ERC721URIStorage,
@@ -18,18 +18,29 @@ contract CyberTiger is
     Ownable
 {
 
+
+
     using SafeMath for uint256;
     using Counters for Counters.Counter;
 
-    struct CyberTigerStruct {
-        string originalData;
-        uint8 status;
+    enum nftRarity {
+         Common,
+         Rare,
+         SuperRare
     }
 
-    mapping(uint256 => CyberTigerStruct) public tigerDna;
+
+    struct GenesisNFTStruct {
+        nftRarity rarity;
+        uint8 status;
+    }
+    
+    mapping(address=>mapping(uint=>uint)) private _ownedTokens;
+    mapping(uint256 => GenesisNFTStruct) public tigerDna;
     mapping(address => bool) public PAUSER_ROLE;
     mapping(address => bool) public MINTER_ROLE;
     mapping(address => bool) public HYDRA_ROLE;
+    mapping(uint8 => nftRarity) public _NFTRarity;
 
     modifier onlyMinter() { 
         require(MINTER_ROLE[msg.sender] == true, "Missing Role");
@@ -105,30 +116,51 @@ contract CyberTiger is
         _unpause();
     }
 
+    function tokenOwnerByIndex(address owner,uint index) public view returns(uint){
+      require(index<ERC721.balanceOf(owner), "Index out of bounds");
+      return _ownedTokens[owner][index];
+    }
+
     function tigerInfo(uint256 tokenId)
         public
         view
         returns (
             address owner,
             string memory _uri,
+            string memory rarity,
             uint8 status
         )
     {
-        CyberTigerStruct memory tg = tigerDna[tokenId];
+        GenesisNFTStruct memory tg = tigerDna[tokenId];
         return (
             ownerOf(tokenId),
             tokenURI(tokenId),
+            getRarityKeyByValue(tg.rarity),
             tg.status
         );
     }
 
+    function getRarityKeyByValue(nftRarity _rarity) internal pure returns (string memory Rarity) {
+        
+        // Error handling for input
+        require(uint8(_rarity) < 3, "Undefined Rarity !");
+        // Loop through possible options
+        if (nftRarity.Common == _rarity) return "Common";
+        if (nftRarity.Rare == _rarity) return "Rare";
+        if (nftRarity.SuperRare == _rarity) return "Supper Rare";
+
+    }
+
+
     function safeMint(
         address to,
-        string memory tokenUri
+        string memory tokenUri,
+        nftRarity rarity
     ) public onlyMinter returns (uint256) {
+        require(uint8(rarity) <= 3, "Undefined rarity code !");
         _safeMint(to, _tokenIdCounter.current());
-        tigerDna[_tokenIdCounter.current()] = CyberTigerStruct(
-            tokenUri,
+        tigerDna[_tokenIdCounter.current()] = GenesisNFTStruct(
+            rarity,
             1
         );
         _setTokenURI(_tokenIdCounter.current(), tokenUri);
