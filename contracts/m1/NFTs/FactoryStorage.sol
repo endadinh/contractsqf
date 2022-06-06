@@ -23,38 +23,20 @@ pragma solidity ^0.8.0;
 
 contract FactoryStorage {
 
-    enum activeStatus {
-        HUMAN,
-        GOBLIN,
-        DEVIL,
-        ANGEL
-    }
 
-    struct activeItems {
-        uint256 id;
-        address owner;
-        activeStatus status;
-    }
-
-    struct ingameItems { 
+    struct Items { 
         uint256 id;
         address owner;
         string itemId;
         string externalId;
-        bool ingame;
-    }
-
-    struct usersStatus { 
-        activeStatus status;
+        bool locked;
     }
 
     
     bytes4 public constant ERC721_Interface = bytes4(0x80ac58cd);
 
     // From ERC721 registry assetId to Item (to avoid asset collision)
-    mapping(uint256 => activeItems) public activeItem;
-    mapping(uint256 => ingameItems) public ingameItem;
-    mapping(address => usersStatus) public userStatus;
+    mapping(uint256 => Items) public itemInfo;
 
 
     event Claim(address indexed receiver, string tokenId);

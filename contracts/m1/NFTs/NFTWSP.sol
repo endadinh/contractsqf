@@ -28,8 +28,7 @@ contract WSPShoes is
     event NFTMinted(
         uint256 tokenId,
         address indexed to,
-        string itemId,
-        string externalId
+        string itemId
     );
 
     constructor(address _holder) ERC721("WSPShoes", "WSPS") {
@@ -54,7 +53,7 @@ contract WSPShoes is
         holder = _newHolder;
     }
 
-    function safeMint(string memory itemId, string memory externalId)
+    function safeMint(string memory itemId)
         public
         onlyMinter
     {
@@ -69,10 +68,10 @@ contract WSPShoes is
         _setTokenURI(tokenId, itemId);
         mintedItemIds[itemId] = true;
 
-        emit NFTMinted(tokenId, holder, itemId, externalId);
+        emit NFTMinted(tokenId, holder, itemId);
     }
 
-    function safeMintToUser(address to,string memory itemId, string memory externalId)
+    function safeMintToUser(address to,string memory itemId)
         public
         onlyMinter
     {
@@ -87,17 +86,7 @@ contract WSPShoes is
         _setTokenURI(tokenId, itemId);
         mintedItemIds[itemId] = true;
 
-        emit NFTMinted(tokenId, holder, itemId, externalId);
-    }
-
-    function safeBuyActive(address to) 
-        public
-        returns (bool)
-    { 
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
-        _safeMint(to, tokenId);
-        return true;
+        emit NFTMinted(tokenId, to, itemId);
     }
 
     function _beforeTokenTransfer(
