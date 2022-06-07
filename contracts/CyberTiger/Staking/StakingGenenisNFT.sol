@@ -6,8 +6,9 @@ pragma solidity ^0.8.2;
 import "./IGenenisNFT.sol";
 import "./SafeMath.sol";
 import "./IERC20.sol";
+import "./Ownable.sol";
 
-contract GenesisStaking {
+contract GenesisStaking is Ownable {
     using SafeMath for uint256;
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
@@ -26,6 +27,8 @@ contract GenesisStaking {
 
     uint256 constant pointMultiplier = 10e32;
 
+    uint256 public tokenPrice;
+
     /**
     @notice Struct to track what user is staking which tokens
     @dev tokenIds are all the tokens staked by the staker
@@ -42,6 +45,11 @@ contract GenesisStaking {
         uint256 rewardsReleased;
         uint256 stakeTime;
     }
+
+    /// Mapping from rarity to rewards
+
+    mapping (uint256 => uint256 ) public percentRewards;
+    mapping (uint256 => uint256 ) public priceByRarity;
 
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
@@ -80,11 +88,19 @@ contract GenesisStaking {
         uint256 contribution
     );
 
-    constructor(address _mainToken, address _mainNFT) public{
+    constructor(address _mainToken, address _mainNFT) public {
         rewardsToken = IERC20(_mainToken);
         genesisNFT = IGenenisNFT(_mainNFT);
         
     }
+
+    function setTokenPrice(uint256 price) public onlyOwner { 
+        require(price > 0, "Price isn't valid ");
+
+        tokenPrice = price;
+
+    }
+
      /**
      * @dev Single gateway to intialize the staking contract after deploying
      * @dev Sets the contract with the MONA genesis NFT and MONA reward token 
@@ -128,6 +144,12 @@ contract GenesisStaking {
 
 
     /// @dev Get the amount a staked nft is valued at ie bought at
+
+
+
+
+    /// CAI NAY CHUA CO SAI DAU NE , CODE SM XONG NHO XOA HAM NAY NHAAAAAAAAAAAAA !!!
+
     function getGenesisContribution (
         uint256 _tokenId
     ) 
@@ -135,8 +157,45 @@ contract GenesisStaking {
         view
         returns (uint256 amount)
     {
-        return contribution[_tokenId];
+        // return contribution[_tokenId];
+        uint256 rewards = getRewardsByRarity(_tokenId);
+        return rewards;
     }
+
+
+
+
+
+    function setPercentEarnByRarity(uint256 rarity,uint256 percent) public onlyOwner{
+        require(rarity <= 2, "Undefined Rarity");
+        require(percent > 0, "inValid Percent" );
+        percentRewards[rarity] = percent;
+    }
+
+    ///@dev calculator amount can get when stake nfts by Rarity ( price ) 
+    function setPriceByRarity(
+        uint256 rarity,
+        uint256 price 
+    ) public onlyOwner { 
+        require(rarity <= 2, "Undefined Rarity");
+        require(price > 0, "inValid price" );
+        priceByRarity[rarity] = price * 10 ** 18;
+    }
+
+    function getRewardsByRarity( 
+        uint256 rarity
+    )
+        public 
+        view
+        returns (uint256 amount) { 
+
+        require(rarity <= 2, "Undefined Rarity");
+
+        uint256 rewardsByRarity = (priceByRarity[rarity].mul(percentRewards[rarity]).div(100)).div(tokenPrice);
+        return rewardsByRarity;
+        
+    }
+
 
     /// @notice Stake Genesis MONA NFT and earn reward tokens. 
     function stake(
@@ -188,7 +247,6 @@ contract GenesisStaking {
 
         uint256 amount = getGenesisContribution(_tokenId);
         staker.balance = staker.balance.add(amount);
-        stakedEthTotal = stakedEthTotal.add(amount);
         staker.tokenIds.push(_tokenId);
         staker.tokenIndex[staker.tokenIds.length - 1];
         staker.stakeTime = time;
@@ -210,7 +268,7 @@ contract GenesisStaking {
     {
         require(
             tokenOwner[_tokenId] == msg.sender,
-            "DigitalaxGenesisStaking._unstake: Sender must have staked tokenID"
+            "GenesisStaking._unstake: Sender must have staked tokenID"
         );
         _unstake(msg.sender, _tokenId);
     }
@@ -275,7 +333,7 @@ contract GenesisStaking {
     function emergencyUnstake(uint256 _tokenId) external {
         require(
             tokenOwner[_tokenId] == msg.sender,
-            "DigitalaxGenesisStaking._unstake: Sender must have staked tokenID"
+            "GenesisStaking._unstake: Sender must have staked tokenID"
         );
         _unstake(msg.sender, _tokenId);
         emit EmergencyUnstake(msg.sender, _tokenId);
@@ -331,7 +389,7 @@ contract GenesisStaking {
     {
         require(
             contribution[_tokenId] > 0,
-            "DigitalaxGenesisStaking.increaseContribution: genesis NFT was not contribibuted"
+            "GenesisStaking.increaseContribution: genesis NFT was not contribibuted"
         );
 
         uint256 _amountToIncrease = msg.value;
@@ -339,7 +397,7 @@ contract GenesisStaking {
 
         require(
             contribution[_tokenId] <= maximumContributionAmount,
-            "DigitalaxGenesisStaking.increaseContribution: You cannot exceed the maximum contribution amount"
+            "GenesisStaking.increaseContribution: You cannot exceed the maximum contribution amount"
         );
 
         totalContributions = totalContributions.add(_amountToIncrease);
@@ -347,7 +405,7 @@ contract GenesisStaking {
         (bool fundsTransferSuccess,) = fundsMultisig.call{value : _amountToIncrease}("");
         require(
             fundsTransferSuccess,
-            "DigitalaxGenesisStaking.increaseContribution: Unable to send contribution to funds multisig"
+            "GenesisStaking.increaseContribution: Unable to send contribution to funds multisig"
         );
         
         Staker storage staker = stakers[tokenOwner[_tokenId]];

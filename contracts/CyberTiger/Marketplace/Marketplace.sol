@@ -15,7 +15,7 @@ abstract contract Context {
         return msg.sender;
     }
 
-    function _msgData() internal view virtual returns (bytes calldata) x`{
+    function _msgData() internal view virtual returns (bytes calldata) {
         return msg.data;
     }
 }
@@ -539,7 +539,6 @@ contract MarketplaceStorage {
     );
 }
 
-}
 
 contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
   using Counters for Counters.Counter;

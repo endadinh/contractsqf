@@ -32,5 +32,11 @@ interface IGenenisNFT {
     function isApprovedForAll(address owner, address operator) external view returns (bool);
 
     function tokenOwnerByIndex(address owner, uint256 index) external view returns (uint256);
+    function tigerInfo(uint256 tokenId) external view returns (
+            address owner,
+            string memory _uri,
+            string memory rarity,
+            uint8 status 
+            );
 
 }
