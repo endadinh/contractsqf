@@ -15,17 +15,9 @@ contract GenesisStaking is Ownable {
     IERC20 public rewardsToken;
     IGenenisNFT public genesisNFT;
 
-    /// @notice all funds will be sent to this address pon purchase of a Genesis NFT
-    address payable public fundsMultisig;
-
     /// @notice total ethereum staked currently in the gensesis staking contract
-    uint256 public stakedEthTotal;
     uint256 public lastUpdateTime;
 
-    uint256 public rewardsPerTokenPoints;
-    uint256 public totalUnclaimedRewards;
-
-    uint256 constant pointMultiplier = 10e32;
 
     uint256 public tokenPrice;
 
@@ -36,14 +28,19 @@ contract GenesisStaking is Ownable {
     @dev rewardsEarned is the total reward for the staker till now
     @dev rewardsReleased is how much reward has been paid to the staker
     */
+
+    struct nftsStaked { 
+        uint256 tokenId;
+        uint256 stakeTime;
+        uint256 startStake;
+        uint256 rewards;
+        address owner;
+    }
+
     struct Staker {
         uint256[] tokenIds;
         mapping (uint256 => uint256) tokenIndex;
-        uint256 balance;
-        uint256 lastRewardPoints;
-        uint256 rewardsEarned;
-        uint256 rewardsReleased;
-        uint256 stakeTime;
+        uint256 totalRewardsRelease;
     }
 
     /// Mapping from rarity to rewards
@@ -51,17 +48,20 @@ contract GenesisStaking is Ownable {
     mapping (uint256 => uint256 ) public percentRewards;
     mapping (uint256 => uint256 ) public priceByRarity;
 
+    /// Mapping token stake one times;
+    
+    mapping (uint256 => bool) public isStaked;
+
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
+    mapping (uint256 => nftsStaked) public nftStaked;
+    mapping (address => mapping(uint256 => nftsStaked ) ) public stakedNftByOwner;
 
     // Mapping from token ID to owner address
     mapping (uint256 => address) public tokenOwner;
 
     /// @notice tokenId => amount contributed
     mapping (uint256 => uint256) public contribution;
-    uint256 public totalContributions;
-    // @notice the maximum accumulative amount a user can contribute to the genesis sale
-    uint256 public constant maximumContributionAmount = 2 ether;
 
     /// @notice sets the token to be claimable or not, cannot claim if it set to false
     bool public tokensClaimable;
@@ -101,7 +101,7 @@ contract GenesisStaking is Ownable {
 
     }
 
-     /**
+     /**`
      * @dev Single gateway to intialize the staking contract after deploying
      * @dev Sets the contract with the MONA genesis NFT and MONA reward token 
      */
@@ -113,7 +113,6 @@ contract GenesisStaking is Ownable {
         public
     {
         require(!initialised, "Already initialised");
-        fundsMultisig = _fundsMultisig;
         rewardsToken = _rewardsToken;
         genesisNFT = _genesisNFT;
         lastUpdateTime = block.timestamp;
@@ -145,25 +144,10 @@ contract GenesisStaking is Ownable {
 
     /// @dev Get the amount a staked nft is valued at ie bought at
 
-
-
-
-    /// CAI NAY CHUA CO SAI DAU NE , CODE SM XONG NHO XOA HAM NAY NHAAAAAAAAAAAAA !!!
-
-    function getGenesisContribution (
-        uint256 _tokenId
-    ) 
-        public
-        view
-        returns (uint256 amount)
-    {
-        // return contribution[_tokenId];
-        uint256 rewards = getRewardsByRarity(_tokenId);
-        return rewards;
+    function getTigerRarity(uint256 tokenId) public view returns (IGenenisNFT.nftRarity) { 
+        IGenenisNFT.GenesisNFTStruct memory _tigerDna = genesisNFT.tigerDna(tokenId);
+        return _tigerDna.rarity;
     }
-
-
-
 
 
     function setPercentEarnByRarity(uint256 rarity,uint256 percent) public onlyOwner{
@@ -192,28 +176,32 @@ contract GenesisStaking is Ownable {
         require(rarity <= 2, "Undefined Rarity");
 
         uint256 rewardsByRarity = (priceByRarity[rarity].mul(percentRewards[rarity]).div(100)).div(tokenPrice);
+
         return rewardsByRarity;
         
     }
 
+    function getStakedNFTInfo(address _user, uint256 _tokenId) public view returns (uint256 stakeMonth,uint256 blockStake ,uint256 rewards) { 
+        nftsStaked storage x = stakedNftByOwner[_user][_tokenId];
+        return (
+            x.stakeTime,
+            x.startStake,
+            x.rewards
+        );
+    }
+
 
     /// @notice Stake Genesis MONA NFT and earn reward tokens. 
+
     function stake(
         uint256 tokenId,
         uint256 time
     )
         external
     {
+        require(isStaked[tokenId] == false, "staked NFTs");
+        require(genesisNFT.ownerOf(tokenId) == msg.sender, "Only NFT's owner can stake !");
         _stake(msg.sender, tokenId,time);
-    }
-
-     /// @notice Stake multiple MONA NFTs and earn reward tokens. 
-    function stakeBatch(uint256[] memory tokenIds,uint256 time)
-        external
-    {
-        for (uint i = 0; i < tokenIds.length; i++) {
-            _stake(msg.sender, tokenIds[i],time);
-        }
     }
 
     /// @notice Stake all your MONA NFTs and earn reward tokens. 
@@ -225,7 +213,6 @@ contract GenesisStaking is Ownable {
             _stake(msg.sender, genesisNFT.tokenOwnerByIndex(msg.sender,i),time);
         }
     }
-
 
     /**
      * @dev All the staking goes through this function
@@ -240,22 +227,37 @@ contract GenesisStaking is Ownable {
         internal
     {
         Staker storage staker = stakers[_user];
+        nftsStaked storage nftStake = nftStaked[_tokenId];
 
-        if (staker.balance == 0 && staker.lastRewardPoints == 0 ) {
-          staker.lastRewardPoints = rewardsPerTokenPoints;
-        }
+    // Get NFTs stake info.
 
-        uint256 amount = getGenesisContribution(_tokenId);
-        staker.balance = staker.balance.add(amount);
+    uint8 _tigerRarity = uint8(getTigerRarity(_tokenId));
+
+    uint256 rewards = getRewardsByRarity(_tigerRarity);
+
+
+    /// update stake nft info
+
+        nftStake.tokenId = _tokenId;
+        nftStake.stakeTime = time;
+        nftStake.startStake = block.timestamp;
+        nftStake.rewards = rewards;
+        nftStake.owner = _user;
+
+    // Update staker info
+
         staker.tokenIds.push(_tokenId);
         staker.tokenIndex[staker.tokenIds.length - 1];
-        staker.stakeTime = time;
         tokenOwner[_tokenId] = _user;
+        stakedNftByOwner[_user][_tokenId] = nftStake;
+        isStaked[_tokenId] = true;
+
         genesisNFT.safeTransferFrom(
             _user,
             address(this),
             _tokenId
         );
+
 
         emit Staked(_user, _tokenId);
     }
@@ -274,24 +276,13 @@ contract GenesisStaking is Ownable {
     }
 
     /// @notice Stake multiple Genesis NFTs and claim reward tokens. 
-    function unstakeBatch(
-        uint256[] memory tokenIds
-    )
-        external
-    {
-        for (uint i = 0; i < tokenIds.length; i++) {
-            if (tokenOwner[tokenIds[i]] == msg.sender) {
-                _unstake(msg.sender, tokenIds[i]);
-            }
-        }
-    }
-
 
      /**
      * @dev All the unstaking goes through this function
      * @dev Rewards to be given out is calculated
      * @dev Balance of stakers are updated as they unstake the nfts based on ether price
     */
+
     function _unstake(
         address _user,
         uint256 _tokenId
@@ -300,11 +291,6 @@ contract GenesisStaking is Ownable {
     {
 
         Staker storage staker = stakers[_user];
-
-        uint256 amount = getGenesisContribution(_tokenId);
-        staker.balance = staker.balance.sub(amount);
-        stakedEthTotal = stakedEthTotal.sub(amount);
-
         uint256 lastIndex = staker.tokenIds.length - 1;
         uint256 lastIndexKey = staker.tokenIds[lastIndex];
         staker.tokenIds[staker.tokenIndex[_tokenId]] = lastIndexKey;
@@ -314,10 +300,13 @@ contract GenesisStaking is Ownable {
             delete staker.tokenIndex[_tokenId];
         }
 
-        if (staker.balance == 0) {
+        if (staker.tokenIds.length == 0) {
             delete stakers[_user];
         }
+
+        delete nftStaked[_tokenId];
         delete tokenOwner[_tokenId];
+        delete stakedNftByOwner[_user][_tokenId];
 
         genesisNFT.safeTransferFrom(
             address(this),
@@ -329,7 +318,9 @@ contract GenesisStaking is Ownable {
 
     }
 
+
     // Unstake without caring about rewards. EMERGENCY ONLY.
+    
     function emergencyUnstake(uint256 _tokenId) external {
         require(
             tokenOwner[_tokenId] == msg.sender,
@@ -339,84 +330,6 @@ contract GenesisStaking is Ownable {
         emit EmergencyUnstake(msg.sender, _tokenId);
 
     }
-
-
-
-    /// @notice Returns the rewards owing for a user
-    /// @dev The rewards are dynamic and normalised from the other pools
-    /// @dev This gets the rewards from each of the periods as one multiplier
-    function rewardsOwing(
-        address _user
-    )
-        public
-        view
-        returns(uint256)
-    {
-        uint256 newRewardPerToken = rewardsPerTokenPoints.sub(stakers[_user].lastRewardPoints);
-        uint256 rewards = stakers[_user].balance.mul(newRewardPerToken)
-                                                .div(1e18)
-                                                .div(pointMultiplier);
-        return rewards;
-    }
-
-
-
-    function setContributions(
-        uint256[] memory tokens,
-        uint256[] memory amounts
-    )
-        external
-    {
-        for (uint256 i = 0; i < tokens.length; i++) {
-            uint256 token = tokens[i];
-            uint256 amount = amounts[i];
-            contribution[token] = amount;
-            totalContributions = totalContributions.add(amount);
-
-        }
-    }
-
-    /**
-     * @notice Facilitates an owner to increase there contribution
-     * @dev Cannot contribute less than minimumContributionAmount
-     * @dev Cannot contribute accumulative more than than maximumContributionAmount
-     * @dev Reverts if caller does not already owns an genesis token
-     * @dev All funds move to fundsMultisig
-     */
-    function increaseContribution(uint256 _tokenId)
-        external
-        payable
-    {
-        require(
-            contribution[_tokenId] > 0,
-            "GenesisStaking.increaseContribution: genesis NFT was not contribibuted"
-        );
-
-        uint256 _amountToIncrease = msg.value;
-        contribution[_tokenId] = contribution[_tokenId].add(_amountToIncrease);
-
-        require(
-            contribution[_tokenId] <= maximumContributionAmount,
-            "GenesisStaking.increaseContribution: You cannot exceed the maximum contribution amount"
-        );
-
-        totalContributions = totalContributions.add(_amountToIncrease);
-
-        (bool fundsTransferSuccess,) = fundsMultisig.call{value : _amountToIncrease}("");
-        require(
-            fundsTransferSuccess,
-            "GenesisStaking.increaseContribution: Unable to send contribution to funds multisig"
-        );
-        
-        Staker storage staker = stakers[tokenOwner[_tokenId]];
-        /// @dev Update staked balance
-        if (staker.tokenIds[staker.tokenIndex[_tokenId]] == _tokenId ) {
-            staker.balance = staker.balance.add(_amountToIncrease);
-            stakedEthTotal = stakedEthTotal.add(_amountToIncrease);
-        }
-        emit ContributionIncreased(_tokenId, _amountToIncrease);
-    }
-
 
     function onERC721Received(
         address,

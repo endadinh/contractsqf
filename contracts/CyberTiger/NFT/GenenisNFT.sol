@@ -37,6 +37,7 @@ contract NFTGenesis is
     
     mapping(address=>mapping(uint=>uint)) private _ownedTokens;
     mapping(uint256 => GenesisNFTStruct) public tigerDna;
+    mapping(uint256 => uint8) public tokenRarity;
     mapping(address => bool) public PAUSER_ROLE;
     mapping(address => bool) public MINTER_ROLE;
     mapping(address => bool) public HYDRA_ROLE;
@@ -164,6 +165,7 @@ contract NFTGenesis is
             1
         );
         _setTokenURI(_tokenIdCounter.current(), tokenUri);
+        tokenRarity[_tokenIdCounter.current()] = uint8(rarity);
         _tokenIdCounter.increment();
         return _tokenIdCounter.current() - 1;
     }
