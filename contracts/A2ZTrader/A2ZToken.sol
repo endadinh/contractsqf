@@ -485,7 +485,7 @@ contract ERC20 is Context, IERC20, AccountFrozenBalances, Ownable, Meltable {
 	constructor (string memory name, string memory symbol, uint256 max, uint total) public {
 		_name = name;
 		_symbol = symbol;
-		_decimals = 6;
+		_decimals = 8;
 		_maxSupply = max;
 		_totalSupply = total;
 		_balances[address(msg.sender)] = total;
@@ -654,7 +654,7 @@ contract ERC20 is Context, IERC20, AccountFrozenBalances, Ownable, Meltable {
 pragma solidity 0.6.12;
 
 // Token with Governance.
-contract A2ZToken is ERC20("A2Z Traders", "AZT",99*10**6*10**6, 99*10**6*10**6) {
+contract A2ZToken is ERC20("A2Z Traders", "AZT",99*10**6*10**8, 99*10**6*10**8) {
 	address public feeaddr;
 	uint256 public transferFeeRate;
 	
