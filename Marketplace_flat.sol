@@ -471,24 +471,8 @@ pragma solidity ^0.8.0;
 
 contract MarketplaceStorage {
 
-    enum ItemStatus {
-        AVAIL,
-        SELLING
-    }
-
-  struct MarketItem {
-    uint256 itemId;
-    uint256 tokenId;
-    address seller;
-    address owner;
-    uint256 price;
-    ItemStatus status;
-  }
-
-    MarketItem[] public items;
     bytes4 public constant ERC721_Interface = bytes4(0x80ac58cd);
 
-    mapping (uint256 => MarketItem) public allItems;
     // From ERC721 registry assetId to Item (to avoid asset collision)
     // mapping(address => mapping(uint256 => MarketItem)) public items;
 
@@ -533,44 +517,61 @@ contract MarketplaceStorage {
     );
 }
 
+pragma solidity ^0.8.2;
+
 
 contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
   using Counters for Counters.Counter;
   Counters.Counter private _itemIds;
   Counters.Counter private _itemsSold;
 
+    struct MarketItem {
+        uint256 tokenId;
+        address seller;
+        address owner;
+        uint256 price;
+    }
+   
+    struct Seller {
+        uint256[] tokenIds;
+        mapping (uint256 => uint256) tokenIndex;
+    }
+
+  mapping(uint256 => uint256) public idTokenToItem;
   mapping(uint256 => MarketItem) private idToMarketItem;
+  mapping(address => Seller) private sellers ;
   
   constructor(address _mainToken, address _mainNFT ) {
       mainToken = IERC20(_mainToken);
       mainNFTs = IERC721(_mainNFT);
-
   }
 
     function getMarketItem() public view returns(MarketItem[] memory) { 
             uint totalItemCount = _itemIds.current();
-            uint itemCount = 0;
             uint currentIndex = 0;           
+            MarketItem[] memory items = new MarketItem[](totalItemCount);
             for (uint i = 0; i < totalItemCount; i++) {
-                if (idToMarketItem[i].status == ItemStatus.SELLING) {
-                itemCount += 1;
-                }
-            }
-            MarketItem[] memory items = new MarketItem[](itemCount);
-            for (uint i = 0; i < totalItemCount; i++) {
-            if ( idToMarketItem[i].status == ItemStatus.SELLING) {
-
-                uint currentId = idToMarketItem[i].itemId;
-                MarketItem storage currentItem = idToMarketItem[currentId];
+                MarketItem storage currentItem = idToMarketItem[i];
                 items[currentIndex] = currentItem;
                 currentIndex += 1;
-            }
         }
         return items;
     }
 
-    function getMarketItem(uint256 marketItemId) public view returns (MarketItem memory) {
-        return idToMarketItem[marketItemId];
+    function getDetailSelling(uint256 tokenId) public view returns(MarketItem memory) { 
+            uint256 itemId = idTokenToItem[tokenId];
+            return idToMarketItem[itemId];
+
+    } 
+
+    function getSellingToken(
+        address _user
+    )
+        external
+        view
+        returns (uint256[] memory tokenIds)
+    {
+        return sellers[_user].tokenIds;
     }
 
     function setMainToken(address _address) external onlyOwner {
@@ -589,15 +590,13 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
     uint256 itemId = _itemIds.current();
     _safeTransferToMarket(tokenId);
     idToMarketItem[itemId] =  MarketItem(
-      itemId,
       tokenId,
       msg.sender,
       address(this),
-      price,
-      ItemStatus.SELLING
+      price
     );
+    idTokenToItem[tokenId] = itemId;
     _itemIds.increment();
-
     emit MarketItemCreated(
       itemId,
       tokenId,
@@ -606,24 +605,32 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
       price
     );
   }
-  function createMarketSale(
-    uint256 itemId,
-    uint256 amount
-    ) public {
-    uint price = idToMarketItem[itemId].price;
-    uint tokenId = idToMarketItem[itemId].tokenId;
-    address seller =  idToMarketItem[itemId].seller;
-    // StructLib.ingameItems memory item = factory.getIngameItem(tokenId);
-    require(amount == price, "Please submit the asking price in order to complete the purchase");
-    // require(item.ingame == false, "Item is not available now !");
-    _safeBuyItem(itemId,amount,tokenId);
-    idToMarketItem[itemId].owner = address(msg.sender);
-    idToMarketItem[itemId].status = ItemStatus.AVAIL;
+  function createMarketSale(uint256 itemId) public {
+    MarketItem storage item = idToMarketItem[itemId];
+    uint price = item.price;
+    uint tokenId = item.tokenId;
+    address _user =  item.seller;
+    _safeBuyItem(itemId,price,tokenId);
+    delete idToMarketItem[itemId];
+    delete idTokenToItem[tokenId];
     _itemsSold.increment();
+    Seller storage seller = sellers[_user];
+    uint256 lastIndex = seller.tokenIds.length - 1;
+    uint256 lastIndexKey = seller.tokenIds[lastIndex];
+    seller.tokenIds[seller.tokenIndex[tokenId]] = lastIndexKey;
+        seller.tokenIndex[lastIndexKey] = seller.tokenIndex[tokenId];
+        if (seller.tokenIds.length > 0) {
+            seller.tokenIds.pop();
+            delete seller.tokenIndex[tokenId];
+        }
+
+        if (seller.tokenIds.length == 0) {
+            delete sellers[_user];
+        }
     emit BuyItemSuccessful(
         itemId,
         tokenId,
-        seller,
+        _user,
         price,
         address(msg.sender),
         "MEAT",
@@ -633,23 +640,30 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
    function delistItem(uint256 itemId) public {
         address deleteBy = msg.sender;
         MarketItem memory item = idToMarketItem[itemId];
-
-
-        require(item.itemId != 0, "Asset not published");
-        require(item.status == ItemStatus.SELLING, "Asset delisted");
-
-        address seller = item.seller;
-        require(seller != address(0), "Invalid address");
+        uint256 tokenId = item.tokenId;
+        address _user = item.seller;
         require(
-            seller == msg.sender,
+            _user == msg.sender,
             "Only seller can delist"
         );
-        mainNFTs.safeTransferFrom(address(this), seller, itemId);
-        item.status = ItemStatus.AVAIL;
+        mainNFTs.safeTransferFrom(address(this), _user, tokenId);
         delete idToMarketItem[itemId];
+        delete idTokenToItem[tokenId];
+         Seller storage seller = sellers[_user];
+        uint256 lastIndex = seller.tokenIds.length - 1;
+        uint256 lastIndexKey = seller.tokenIds[lastIndex];
+        seller.tokenIds[seller.tokenIndex[tokenId]] = lastIndexKey;
+        seller.tokenIndex[lastIndexKey] = seller.tokenIndex[tokenId];
+        if (seller.tokenIds.length > 0) {
+            seller.tokenIds.pop();
+            delete seller.tokenIndex[tokenId];
+        }
+        if (seller.tokenIds.length == 0) {
+            delete sellers[_user];
+        }
         emit DelistItemSuccessful(
-            item.itemId,
             itemId,
+            tokenId,
             deleteBy,
             block.timestamp
         );
@@ -657,12 +671,15 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
         
     function _safeTransferToMarket(uint256 tokenId) private {
             // factory.setOwnerIngameItem(payable(address(msg.sender)),address(this), tokenId);
+            Seller storage seller = sellers[msg.sender];
+            seller.tokenIds.push(tokenId);
+            seller.tokenIndex[seller.tokenIds.length - 1];
             mainNFTs.transferFrom(msg.sender, address(this), tokenId);
+            
     } 
 
     function _safeBuyItem(uint256 itemId,uint256 amount, uint256 tokenId ) private { 
-        mainToken.transferFrom(address(msg.sender), idToMarketItem[itemId].seller , amount);
-        // factory.setOwnerIngameItem(address(this), address(msg.sender), tokenId);
+        mainToken.transferFrom(address(msg.sender), address(idToMarketItem[itemId].seller), amount);
         mainNFTs.transferFrom(address(this), address(msg.sender), tokenId);
     }
 
