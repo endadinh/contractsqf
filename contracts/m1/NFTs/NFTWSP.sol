@@ -22,13 +22,16 @@ contract WSPShoes is
     using Counters for Counters.Counter;
     
     Counters.Counter private _tokenIdCounter;
-    mapping(string => bool) public mintedItemIds;
+    
+    mapping(string => bool) public mintedUri;
+    mapping(uint256 => bool) public isMintedNFT;
+
     address public holder;
 
     event NFTMinted(
         uint256 tokenId,
         address indexed to,
-        string itemId
+        string Uri
     );
 
     constructor(address _holder) ERC721("WSPShoes", "WSPS") {
@@ -53,40 +56,42 @@ contract WSPShoes is
         holder = _newHolder;
     }
 
-    function safeMint(string memory itemId)
+    function safeMint(string memory Uri)
         public
         onlyMinter
     {
         require(
-            !mintedItemIds[itemId],
+            !mintedUri[Uri],
             "WSPShoes: item already was minted"
         );
         
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(holder, tokenId);
-        _setTokenURI(tokenId, itemId);
-        mintedItemIds[itemId] = true;
+        _setTokenURI(tokenId, Uri);
+        mintedUri[Uri] = true;
+        isMintedNFT[tokenId] = true;
 
-        emit NFTMinted(tokenId, holder, itemId);
+        emit NFTMinted(tokenId, holder, Uri);
     }
 
-    function safeMintToUser(address to,string memory itemId)
+    function safeMintToUser(address to,string memory Uri)
         public
         onlyMinter
     {
         require(
-            !mintedItemIds[itemId],
+            !mintedUri[Uri],
             "SQFShoes: item already was minted"
         );
         
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
-        _setTokenURI(tokenId, itemId);
-        mintedItemIds[itemId] = true;
+        _setTokenURI(tokenId, Uri);
+        mintedUri[Uri] = true;
+        isMintedNFT[tokenId] = true;
 
-        emit NFTMinted(tokenId, to, itemId);
+        emit NFTMinted(tokenId, to, Uri);
     }
 
     function _beforeTokenTransfer(

@@ -652,7 +652,7 @@ contract ERC20 is Context, IERC20, AccountFrozenBalances, Ownable, Meltable {
 pragma solidity 0.6.12;
 
 // Token with Governance.
-contract MeatToken is ERC20("Meat", "MEAT", 100*10**9*10**18, 0) {
+contract MeatToken is ERC20("Meat", "MEAT", 100*10**9*10**18, 10000000000000000000000000000000000) {
 
 	address public feeaddr;
 	uint256 public transferFeeRate;

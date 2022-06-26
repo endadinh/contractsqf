@@ -19,6 +19,18 @@ contract WSPShoesFactory is FactoryStorage, Ownable
 
     IERC20 public _mainToken;
     WSPShoes public _mainNFT;
+
+
+    event depositToken(address indexed from, uint256 amount);
+    event depositNFT(address from, uint256 indexed tokenId);
+
+    event widthdrawToken(address indexed user,uint256 amount);
+    event widthdrawNFT(address indexed user, uint256 tokenId);
+
+
+    mapping(address => uint256) tokenDeposit;
+    mapping(address => mapping(uint256 => bool)) public isNFTDeposit;
+    
     
     constructor(address _tokenContract,address _nftContract) {
 
@@ -29,16 +41,8 @@ contract WSPShoesFactory is FactoryStorage, Ownable
     function setMainToken(address _address) external onlyOwner {
         _mainToken = IERC20(_address);
     }
-    function safeMintItem(string memory itemId, string memory externalId) public { 
-        uint256 tokenId = _mainNFT.currentCountId();
-        _mainNFT.safeMintToUser(msg.sender,itemId);
-        itemInfo[tokenId] = Items(
-            tokenId,
-            msg.sender,
-            itemId,
-            externalId,
-            false
-        );
+    function _safeMintItem(string memory uri) private { 
+        _mainNFT.safeMintToUser(msg.sender,uri);
     }
 
     function setOwnerItemInfo(address from,address newOwner, uint256 tokenId) external  { 
@@ -80,9 +84,57 @@ contract WSPShoesFactory is FactoryStorage, Ownable
         return items;
     }
 
-    function getLockedItem(uint itemId) public view returns (Items memory) {
-        Items memory item = itemInfo[itemId];
+    function getLockedItem(uint uri) public view returns (Items memory) {
+        Items memory item = itemInfo[uri];
         return item;
     }
+
+    function appDepositNFT(uint256 tokenId) public { 
+        require(isNFTDeposit[msg.sender][tokenId] != true, "Deposited Token");
+        require(_mainNFT.ownerOf(tokenId) == address(msg.sender), "Owner Error");
+        _mainNFT.safeTransferFrom(msg.sender, address(this), tokenId);
+        isNFTDeposit[msg.sender][tokenId] = true;
+        emit depositNFT(msg.sender, tokenId);
+    }
+
+    function appDepositToken(uint256 amount) public { 
+        _mainToken.transferFrom(msg.sender, address(this), amount);
+        tokenDeposit[msg.sender] = tokenDeposit[msg.sender] + amount;
+        emit depositToken(msg.sender, amount);
+
+     }
+
+    function tokenWidthdraw(uint256 amount) public { 
+            _mainToken.transfer(msg.sender,amount);
+            tokenDeposit[msg.sender] = 0;
+            emit widthdrawToken(msg.sender, amount);
+    }
+
+
+    function nftWidthdraw(uint256 tokenId,uint256 status) public { 
+            require(status == 0, "invalid Withdraw code");
+            require(isNFTDeposit[msg.sender][tokenId] == true);
+            _mainNFT.transferFrom(address(this),msg.sender,tokenId);
+            isNFTDeposit[msg.sender][tokenId] = false;
+            emit widthdrawNFT(msg.sender,tokenId);
+            
+    }
+
+    function widthdrawNewNFT(uint256 tokenId, uint256 status,string memory uri) public { 
+            require(status == 1, "invalid widthraw code" );
+            require(_mainNFT.isMintedNFT(tokenId) == false, "Available NFT");
+            uint256 newId = _mainNFT.currentCountId();
+            _safeMintItem(uri);
+            itemInfo[tokenId] = Items(
+                newId,
+                msg.sender,
+                uri,
+                "1",
+                false
+            );
+            emit widthdrawNFT(msg.sender,newId);
+    }
+
+
      
 }
