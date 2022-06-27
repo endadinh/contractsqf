@@ -649,6 +649,7 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
         mainNFTs.safeTransferFrom(address(this), _user, tokenId);
         delete idToMarketItem[itemId];
         delete idTokenToItem[tokenId];
+        delete item;
          Seller storage seller = sellers[_user];
         uint256 lastIndex = seller.tokenIds.length - 1;
         uint256 lastIndexKey = seller.tokenIds[lastIndex];
