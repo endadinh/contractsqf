@@ -1340,7 +1340,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         emit Transfer(address(0), to, tokenId);
 
         _afterTokenTransfer(address(0), to, tokenId);
-    }
+    } 
 
     /**
      * @dev Destroys `tokenId`.
@@ -1793,7 +1793,7 @@ contract NFTGenesis is
 
     Counters.Counter private _tokenIdCounter;
 
-    constructor() ERC721("TigerCyber", "TC") {
+    constructor() ERC721("Tiger V1", "TigerZ") {
         PAUSER_ROLE[msg.sender] = true;
         MINTER_ROLE[msg.sender] = true;
         HYDRA_ROLE[msg.sender] = true;

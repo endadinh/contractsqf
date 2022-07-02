@@ -460,7 +460,7 @@ contract GenesisStaking is Ownable {
     mapping (uint256 => uint256 ) public priceByRarity;
 
     /// Mapping token stake one times;
-    
+    mapping (uint256 => uint256) public rewardOfNFT;
     mapping (uint256 => bool) public isStaked;
 
     /// @notice mapping of a staker to its current properties
@@ -653,8 +653,14 @@ contract GenesisStaking is Ownable {
     // Get NFTs stake info.
 
     uint8 _tigerRarity = uint8(getTigerRarity(_tokenId));
-
-    uint256 rewards = getRewardsByRarity(_tigerRarity);
+    uint256 rewards;
+    if(rewardOfNFT[_tokenId] != 0) { 
+        rewards = rewardOfNFT[_tokenId];
+    }
+    else { 
+        rewards = getRewardsByRarity(_tigerRarity);
+        rewardOfNFT[_tokenId] = rewards;
+    }
 
 
     /// update stake nft info

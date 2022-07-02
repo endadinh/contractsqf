@@ -733,22 +733,22 @@ contract WorldStep is Context, IERC20, Ownable {
             }
             uint256 senderBalance = _balances[sender];
             require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
-                if(isMarketPair[recipient] && !isExcludedFromFee[sender]) {
-                    uint256 totalAmountToFee = amount.mul(_totalTaxIfSelling).div(100);
-                    amount = amount.sub(totalAmountToFee);
-                    uint256 totalToRewardPool = totalAmountToFee.mul(_sellRewardPoolFee).div(_totalTaxIfSelling);
-                    _balances[rewardPoolWalletAddress] = _balances[rewardPoolWalletAddress].add(totalToRewardPool);
-                    uint256 feeLeft = totalAmountToFee.sub(totalToRewardPool);
-                    _balances[address(this)] = _balances[address(this)].add(feeLeft);
-                    swapTokensForEth();
-                    emit Transfer(recipient, rewardPoolWalletAddress, totalToRewardPool);
-                }
-                else if (isMarketPair[sender] && !isExcludedFromFee[recipient]) { 
-                    uint256 amountFeeToRewardPool = amount.mul(_totalTaxIfBuying).div(100);
-                    _balances[rewardPoolWalletAddress] = _balances[rewardPoolWalletAddress].add(amountFeeToRewardPool);
-                    emit Transfer(sender,rewardPoolWalletAddress,amountFeeToRewardPool);
-                    amount = amount.sub(amountFeeToRewardPool);
-                }
+            if(isMarketPair[recipient] && !isExcludedFromFee[sender]) {
+                uint256 totalAmountToFee = amount.mul(_totalTaxIfSelling).div(100);
+                amount = amount.sub(totalAmountToFee);
+                uint256 totalToRewardPool = totalAmountToFee.mul(_sellRewardPoolFee).div(_totalTaxIfSelling);
+                _balances[rewardPoolWalletAddress] = _balances[rewardPoolWalletAddress].add(totalToRewardPool);
+                uint256 feeLeft = totalAmountToFee.sub(totalToRewardPool);
+                _balances[address(this)] = _balances[address(this)].add(feeLeft);
+                swapTokensForEth();
+                emit Transfer(recipient, rewardPoolWalletAddress, totalToRewardPool);
+            }
+            else if (isMarketPair[sender] && !isExcludedFromFee[recipient]) { 
+                uint256 amountFeeToRewardPool = amount.mul(_totalTaxIfBuying).div(100);
+                _balances[rewardPoolWalletAddress] = _balances[rewardPoolWalletAddress].add(amountFeeToRewardPool);
+                emit Transfer(sender,rewardPoolWalletAddress,amountFeeToRewardPool);
+                amount = amount.sub(amountFeeToRewardPool);
+            }
             _basicTransfer(sender, recipient, amount);
         return true;
     }
