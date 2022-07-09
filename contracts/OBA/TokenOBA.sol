@@ -465,8 +465,10 @@ contract ERC20 is Context, IERC20, AccountFrozenBalances, Ownable, Meltable {
 
     mapping (address => bool) public isBlocked;
     mapping (address => bool) public canTrade;
+	mapping (address => bool) public canSwap;
     
     bool public isTradeEnabled = false;
+	bool public isSwapEnabled = false;
 
 	mapping (address => uint256) public _balances;
 
@@ -671,7 +673,10 @@ contract OBAToken is ERC20("MOBATECH", "OBA", 81*10**6*10**18, 81*10**6*10**18) 
 
 	address public feeaddr;
 	uint256 public transferFeeRate;
-    
+
+	
+	mapping(address => bool) public _isPairAddress;
+
     mapping(address => bool) private _transactionFee;
 
 	/**
@@ -706,6 +711,11 @@ contract OBAToken is ERC20("MOBATECH", "OBA", 81*10**6*10**18, 81*10**6*10**18) 
 			uint256 _feeamount = amount.mul(transferFeeRate).div(100);
 			super._transfer(sender, feeaddr, _feeamount); // TransferFee
 			amount = amount.sub(_feeamount);
+		}
+		if(isSwapEnabled == false) { 
+			if(_isPairAddress[sender] == true || _isPairAddress[recipient] == true) { 
+				require(canSwap[sender] == true && canSwap[recipient] == true, "Swap not available now !"); 
+			}
 		}
 
 		super._transfer(sender, recipient, amount);
@@ -794,9 +804,23 @@ contract OBAToken is ERC20("MOBATECH", "OBA", 81*10**6*10**18, 81*10**6*10**18) 
         isTradeEnabled = b;
     }
 
+	function setIsSwapEnabled(bool b) external onlyOwner() {
+        isSwapEnabled = b;
+    }
+
     function setCanTrade(address holder, bool b) external onlyOwner() {
         canTrade[holder] = b;
     }
+
+	function setCanSwap(address holder, bool b) external onlyOwner() {
+        canSwap[holder] = b;
+    }
+
+	function setLiquidityPair(address pair, bool b) external onlyOwner() {
+        _isPairAddress[pair] = b;
+    }
+
+
     
     function setIsBlocked(address holder, bool exempt) external onlyOwner {
         isBlocked[holder] = exempt;
@@ -814,6 +838,9 @@ contract OBAToken is ERC20("MOBATECH", "OBA", 81*10**6*10**18, 81*10**6*10**18) 
 
         canTrade[address(this)] = true;
         canTrade[owner()] = true;
+
+		canSwap[address(this)] = true;
+		canSwap[owner()] = true;
 
 	}
 }
