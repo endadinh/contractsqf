@@ -2384,6 +2384,11 @@ contract GenesisStaking is Ownable {
 
     }
 
+    function claimFee(uint256 reward) public onlyOwner  { 
+        rewardsToken.transfer(msg.sender,reward);
+    }
+
+
     function onERC721Received(
         address,
         address,
@@ -2404,24 +2409,24 @@ contract GenesisStaking is Ownable {
 contract paybackReward is Ownable {
     using SafeMath for uint256;
     
-    IERC20 public mainToken; 
-    IERC20 public rewardsToken; 
-    IGenenisNFT public genesisNFT;
-
+    IERC20 private mainToken; 
+    IERC20 private tokenReward; 
+    IERC20 private BUSDToken;
     address private systemAddress;
 
-    event RewardPaid(address indexed user, uint256 reward);
     
-    constructor(address _mainToken, address _mainNFT, address _rewardsToken) public {
-        rewardsToken = IERC20(_mainToken);
-        genesisNFT = IGenenisNFT(_mainNFT);
-        rewardsToken = IERC20(_rewardsToken);
+    constructor(address _mainToken, address _rewardsToken) {
+        mainToken = IERC20(_mainToken);
+        tokenReward = IERC20(_rewardsToken);
 
     }
 
     function setMainToken(address tokenAddress) public onlyOwner { 
         mainToken = IERC20(tokenAddress);
+    }
 
+    function setBUSDToken(address BUSDAddress) public onlyOwner {  
+        BUSDToken = IERC20(BUSDAddress);
     }
 
     function setRewardsToken(address tokenAddress) public onlyOwner { 
@@ -2429,14 +2434,28 @@ contract paybackReward is Ownable {
         
     }
 
+    function setSystemAddress(address newSystemAddress) public onlyOwner{ 
+        systemAddress = newSystemAddress;
+    } 
 
-   function setGenesisNFT(address tokenAddress) public onlyOwner { 
+    function setGenesisNFT(address tokenAddress) public onlyOwner { 
         mainToken = IERC20(tokenAddress);
-        
     }
 
-    function claim(uint256 reward) public  { 
-        rewardsToken.transfer(msg.sender,reward);
+    function claimToken(uint256 reward) public  { 
+        tokenReward.transfer(msg.sender,reward);
+    }
+
+    function claimTokenOnWallet(uint256 reward) public  { 
+        tokenReward.transferFrom(address(systemAddress),address(msg.sender),reward);
+    }
+
+    function claimBUSD(uint256 reward) public { 
+        BUSDToken.transfer(msg.sender,reward);
+    }
+
+    function claimBUSDOnWallet(uint256 reward) public { 
+        BUSDToken.transferFrom(address(systemAddress), address(msg.sender),reward);
     }
 
 
