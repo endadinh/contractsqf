@@ -422,6 +422,7 @@ contract GenesisStaking is Ownable {
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
     IERC20 public rewardsToken;
+    IERC20 public BUSDToken;
     IGenenisNFT public genesisNFT;
 
     /// @notice total ethereum staked currently in the gensesis staking contract
@@ -462,7 +463,7 @@ contract GenesisStaking is Ownable {
     /// Mapping token stake one times;
     mapping (uint256 => uint256) public rewardOfNFT;
     mapping (uint256 => bool) public isStaked;
-
+    mapping (uint256 => uint256) public priceOfNFT;
     /// @notice mapping of a staker to its current properties
     mapping (address => Staker) public stakers;
     mapping (uint256 => nftsStaked) public nftStaked;
@@ -545,6 +546,15 @@ contract GenesisStaking is Ownable {
         emit ClaimableStatusUpdated(_enabled);
     }
 
+        function setBUSDToken(
+        address busdAddress
+    )
+        external
+        onlyOwner
+    {
+        BUSDToken = IERC20(busdAddress);
+    }
+
     /// @dev Getter functions for Staking contract
     /// @dev Get the tokens staked by a user
     function getStakedTokens(
@@ -557,6 +567,15 @@ contract GenesisStaking is Ownable {
         return stakers[_user].tokenIds;
     }
 
+
+    function getUnstackFeeOfToken(uint256 _tokenId) public view returns(uint256,uint256) { 
+        uint256 feeUnstake = priceOfNFT[_tokenId].mul(unstakeFeeRate).div(100);
+        uint256 feeOnMEAT = feeUnstake.div(tokenPrice); 
+        return(
+        feeUnstake,
+        feeOnMEAT
+        );
+    }
 
     /// @dev Get the amount a staked nft is valued at ie bought at
 
@@ -654,12 +673,13 @@ contract GenesisStaking is Ownable {
 
     uint8 _tigerRarity = uint8(getTigerRarity(_tokenId));
     uint256 rewards;
-    if(rewardOfNFT[_tokenId] != 0) { 
+    if(rewardOfNFT[_tokenId] != 0 && priceOfNFT[_tokenId] != 0) { 
         rewards = rewardOfNFT[_tokenId];
     }
     else { 
         rewards = getRewardsByRarity(_tigerRarity);
         rewardOfNFT[_tokenId] = rewards;
+        priceOfNFT[_tokenId] = priceByRarity[_tigerRarity];
     }
 
 
@@ -674,7 +694,7 @@ contract GenesisStaking is Ownable {
     // Update staker info
 
         staker.tokenIds.push(_tokenId);
-        staker.tokenIndex[staker.tokenIds.length - 1];
+        staker.tokenIndex[_tokenId] = staker.tokenIds.length - 1;
         tokenOwner[_tokenId] = _user;
         stakedNftByOwner[_user][_tokenId] = nftStake;
         isStaked[_tokenId] = true;
@@ -691,7 +711,8 @@ contract GenesisStaking is Ownable {
 
     /// @notice Unstake Genesis MONA NFTs. 
     function unstake(
-        uint256 _tokenId
+        uint256 _tokenId,
+        uint256 _type
     ) 
         external 
     {
@@ -699,11 +720,15 @@ contract GenesisStaking is Ownable {
             tokenOwner[_tokenId] == msg.sender,
             "GenesisStaking._unstake: Sender must have staked tokenID"
         );
-        uint8 _tigerRarity = uint8(getTigerRarity(_tokenId));
-        uint256 rewards = getRewardsByRarity(_tigerRarity);
-        uint256 feeUnstake = rewards.mul(unstakeFeeRate).div(100);
-        rewardsToken.transferFrom(msg.sender,address(this),feeUnstake * 10 ** 18);        
-        _unstake(msg.sender, _tokenId);
+        uint256 feeUnstake = priceOfNFT[_tokenId].mul(unstakeFeeRate).div(100);
+        uint256 feeOnMEAT = feeUnstake.div(tokenPrice);
+        if(_type == 0) { 
+            rewardsToken.transferFrom(msg.sender,address(this),feeOnMEAT * 10 ** 18);        
+        }
+        else{ 
+            BUSDToken.transferFrom(msg.sender,address(this),feeUnstake);        
+        }
+            _unstake(msg.sender, _tokenId);
     }
 
     /// @notice Stake multiple Genesis NFTs and claim reward tokens. 
@@ -713,7 +738,6 @@ contract GenesisStaking is Ownable {
      * @dev Rewards to be given out is calculated
      * @dev Balance of stakers are updated as they unstake the nfts based on ether price
     */
-
     function _unstake(
         address _user,
         uint256 _tokenId
@@ -724,11 +748,14 @@ contract GenesisStaking is Ownable {
         Staker storage staker = stakers[_user];
         uint256 lastIndex = staker.tokenIds.length - 1;
         uint256 lastIndexKey = staker.tokenIds[lastIndex];
-        staker.tokenIds[staker.tokenIndex[_tokenId]] = lastIndexKey;
         staker.tokenIndex[lastIndexKey] = staker.tokenIndex[_tokenId];
+        staker.tokenIds[staker.tokenIndex[lastIndexKey]] = lastIndexKey;
+        staker.tokenIndex[_tokenId] = lastIndex;
+        staker.tokenIds[lastIndex] = _tokenId;
         if (staker.tokenIds.length > 0) {
-            staker.tokenIds.pop();
+            delete staker.tokenIds[lastIndex];
             delete staker.tokenIndex[_tokenId];
+            staker.tokenIds.pop();
         }
 
         if (staker.tokenIds.length == 0) {
@@ -774,5 +801,14 @@ contract GenesisStaking is Ownable {
     }
 
 
+    function adminClaimBUSD() public onlyOwner { 
+        uint256 balanceBUSD = BUSDToken.balanceOf(address(this));
+        BUSDToken.transfer(address(msg.sender),balanceBUSD);
+    }
+
+    function adminClaimMEAT() public onlyOwner { 
+        uint256 balanceMEAT = rewardsToken.balanceOf(address(this));
+        rewardsToken.transfer(address(msg.sender),balanceMEAT);
+    }
 
 }

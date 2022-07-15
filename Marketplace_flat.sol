@@ -477,6 +477,7 @@ contract MarketplaceStorage {
     // mapping(address => mapping(uint256 => MarketItem)) public items;
 
     IERC20 public mainToken;
+    IERC20 public BUSDToken;
     IERC721 public mainNFTs;
 
     uint8 public bnbFeePercent;
@@ -494,7 +495,8 @@ contract MarketplaceStorage {
         uint256 indexed tokenId,
         address seller,
         address owner,
-        uint256 price
+        uint256 price,
+        string currency
     );
 
     event BuyItemSuccessful(
@@ -530,6 +532,7 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
         address seller;
         address owner;
         uint256 price;
+        uint256 currency;
     }
    
     struct Seller {
@@ -545,6 +548,9 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
       mainToken = IERC20(_mainToken);
       mainNFTs = IERC721(_mainNFT);
   }
+    function setBUSDToken(address BUSDAddress) public onlyOwner { 
+        BUSDToken = IERC20(BUSDAddress);
+    } 
 
     function getMarketItem() public view returns(MarketItem[] memory) { 
             uint totalItemCount = _itemIds.current();
@@ -584,7 +590,8 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
 
   function createMarketItem(
     uint256 tokenId,
-    uint256 price
+    uint256 price,
+    uint256 currency
   ) public {
     require(price > 0, "Price must be at least 1 wei");
     uint256 itemId = _itemIds.current();
@@ -593,7 +600,8 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
       tokenId,
       msg.sender,
       address(this),
-      price
+      price,
+      currency
     );
     idTokenToItem[tokenId] = itemId;
     _itemIds.increment();
@@ -602,28 +610,34 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
       tokenId,
       msg.sender,
       address(this),
-      price
+      price,
+      currency == 0 ? "MEAT" : "BUSD"
     );
   }
+
   function createMarketSale(uint256 itemId) public {
     MarketItem storage item = idToMarketItem[itemId];
     uint price = item.price;
     uint tokenId = item.tokenId;
     address _user =  item.seller;
-    _safeBuyItem(itemId,price,tokenId);
+    uint256 currency = item.currency;
+    _safeBuyItem(itemId,price,tokenId,currency);
     delete idToMarketItem[itemId];
     delete idTokenToItem[tokenId];
     _itemsSold.increment();
     Seller storage seller = sellers[_user];
     uint256 lastIndex = seller.tokenIds.length - 1;
     uint256 lastIndexKey = seller.tokenIds[lastIndex];
-    seller.tokenIds[seller.tokenIndex[tokenId]] = lastIndexKey;
-        seller.tokenIndex[lastIndexKey] = seller.tokenIndex[tokenId];
-        if (seller.tokenIds.length > 0) {
-            seller.tokenIds.pop();
-            delete seller.tokenIndex[tokenId];
-        }
+    seller.tokenIndex[lastIndexKey] = seller.tokenIndex[tokenId];
+        seller.tokenIds[seller.tokenIndex[lastIndexKey]] = lastIndexKey;
+        seller.tokenIndex[tokenId] = lastIndex;
+        seller.tokenIds[lastIndex] = tokenId;
 
+        if (seller.tokenIds.length > 0) {
+            delete seller.tokenIds[lastIndex];
+            delete seller.tokenIndex[tokenId];
+            seller.tokenIds.pop();
+        }
         if (seller.tokenIds.length == 0) {
             delete sellers[_user];
         }
@@ -633,7 +647,7 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
         _user,
         price,
         address(msg.sender),
-        "MEAT",
+        currency == 0 ? "MEAT" : "BUSD",
         block.timestamp
     );
   }
@@ -653,11 +667,15 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
          Seller storage seller = sellers[_user];
         uint256 lastIndex = seller.tokenIds.length - 1;
         uint256 lastIndexKey = seller.tokenIds[lastIndex];
-        seller.tokenIds[seller.tokenIndex[tokenId]] = lastIndexKey;
         seller.tokenIndex[lastIndexKey] = seller.tokenIndex[tokenId];
+        seller.tokenIds[seller.tokenIndex[lastIndexKey]] = lastIndexKey;
+        seller.tokenIndex[tokenId] = lastIndex;
+        seller.tokenIds[lastIndex] = tokenId;
+
         if (seller.tokenIds.length > 0) {
-            seller.tokenIds.pop();
+            delete seller.tokenIds[lastIndex];
             delete seller.tokenIndex[tokenId];
+            seller.tokenIds.pop();
         }
         if (seller.tokenIds.length == 0) {
             delete sellers[_user];
@@ -674,13 +692,17 @@ contract NFTMarket is ReentrancyGuard,MarketplaceStorage, Ownable {
             // factory.setOwnerIngameItem(payable(address(msg.sender)),address(this), tokenId);
             Seller storage seller = sellers[msg.sender];
             seller.tokenIds.push(tokenId);
-            seller.tokenIndex[seller.tokenIds.length - 1];
+            seller.tokenIndex[tokenId] = seller.tokenIds.length - 1;
             mainNFTs.transferFrom(msg.sender, address(this), tokenId);
             
     } 
 
-    function _safeBuyItem(uint256 itemId,uint256 amount, uint256 tokenId ) private { 
-        mainToken.transferFrom(address(msg.sender), address(idToMarketItem[itemId].seller), amount);
+    function _safeBuyItem(uint256 itemId,uint256 amount, uint256 tokenId,uint256 currency ) private { 
+        if(currency == 0) { 
+            mainToken.transferFrom(address(msg.sender), address(idToMarketItem[itemId].seller), amount);
+        }else { 
+            BUSDToken.transferFrom(address(msg.sender), address(idToMarketItem[itemId].seller), amount);
+        }
         mainNFTs.transferFrom(address(this), address(msg.sender), tokenId);
     }
 

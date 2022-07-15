@@ -2409,9 +2409,9 @@ contract GenesisStaking is Ownable {
 contract paybackReward is Ownable {
     using SafeMath for uint256;
     
-    IERC20 private mainToken; 
-    IERC20 private tokenReward; 
-    IERC20 private BUSDToken;
+    IERC20 public mainToken; 
+    IERC20 public tokenReward; 
+    IERC20 public BUSDToken;
     address private systemAddress;
 
     
@@ -2430,17 +2430,13 @@ contract paybackReward is Ownable {
     }
 
     function setRewardsToken(address tokenAddress) public onlyOwner { 
-        mainToken = IERC20(tokenAddress);
+        tokenReward = IERC20(tokenAddress);
         
     }
 
     function setSystemAddress(address newSystemAddress) public onlyOwner{ 
         systemAddress = newSystemAddress;
     } 
-
-    function setGenesisNFT(address tokenAddress) public onlyOwner { 
-        mainToken = IERC20(tokenAddress);
-    }
 
     function claimToken(uint256 reward) public  { 
         tokenReward.transfer(msg.sender,reward);
