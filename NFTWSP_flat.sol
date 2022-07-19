@@ -1179,6 +1179,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
      *
      * Calling conditions:
      *
+     
      * - When `from` and `to` are both non-zero, ``from``'s `tokenId` will be
      * transferred to `to`.
      * - When `from` is zero, `tokenId` will be minted for `to`.

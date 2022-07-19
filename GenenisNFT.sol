@@ -1773,6 +1773,8 @@ contract NFTGenesis is
     mapping(address => bool) public MINTER_ROLE;
     mapping(address => bool) public HYDRA_ROLE;
     mapping(uint8 => nftRarity) public _NFTRarity;
+    mapping(uint8 => uint256) public maxSupplyByRarity;
+    mapping(string => bool) public mintedUri;
 
     modifier onlyMinter() { 
         require(MINTER_ROLE[msg.sender] == true, "Missing Role");
@@ -1793,7 +1795,7 @@ contract NFTGenesis is
 
     Counters.Counter private _tokenIdCounter;
 
-    constructor() ERC721("Tiger V1", "TigerZ") {
+    constructor() ERC721("CyberTigers", "TigerGenesis") {
         PAUSER_ROLE[msg.sender] = true;
         MINTER_ROLE[msg.sender] = true;
         HYDRA_ROLE[msg.sender] = true;
@@ -1889,13 +1891,28 @@ contract NFTGenesis is
         string memory tokenUri,
         nftRarity rarity
     ) public onlyMinter returns (uint256) {
-        require(uint8(rarity) <= 3, "Undefined rarity code !");
+        require(uint8(rarity) < 3, "Undefined rarity code !");
+        if(uint8(rarity) == 0) {
+            require(maxSupplyByRarity[0] < 1000,"Max supply Common");
+        }
+        if(uint8(rarity) == 1) {
+            require(maxSupplyByRarity[1] < 500,"Max supply Rare");
+
+        }
+        if(uint8(rarity) == 2) {
+            require(maxSupplyByRarity[2] < 75,"Max supply Super Rare");
+        }
+        require(!mintedUri[tokenUri],
+            "Cybertigers: NFT already was minted"
+        );
         _safeMint(to, _tokenIdCounter.current());
         tigerDna[_tokenIdCounter.current()] = GenesisNFTStruct(
             rarity,
             1
         );
+        maxSupplyByRarity[uint8(rarity)]++;
         _setTokenURI(_tokenIdCounter.current(), tokenUri);
+        mintedUri[tokenUri] = true;
         tokenRarity[_tokenIdCounter.current()] = uint8(rarity);
         _tokenIdCounter.increment();
         return _tokenIdCounter.current() - 1;

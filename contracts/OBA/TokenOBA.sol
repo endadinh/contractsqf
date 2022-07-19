@@ -673,7 +673,6 @@ contract OBAToken is ERC20("MOBATECH", "OBA", 81*10**6*10**18, 81*10**6*10**18) 
 
 	address public feeaddr;
 	uint256 public transferFeeRate;
-
 	
 	mapping(address => bool) public _isPairAddress;
 
