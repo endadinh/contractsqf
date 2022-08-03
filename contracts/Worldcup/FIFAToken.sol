@@ -474,36 +474,32 @@ contract FIFA is Context, IERC20, Ownable {
     using SafeERC20 for IERC20;
     string private _name = "FIFA Champions";
     string private _symbol = "FIFA";
-    uint8 private _decimals = 9;
+    uint8 private _decimals = 18;
 
     // address payable public marketingWalletAddress = payable(0x8492cbd894686D7e98214541903c7BA6f94928D6); 
     // address payable public developmentWalletAddress = payable(0xa4eD7aa4eF5deB0A63e97d9Cb77445aE553feb1d); 
-    address public rewardPoolWalletAddress = 0xaf8a7611aEEd90Aa6ab4D8257b7DE42575698F29; 
+    address public takeFeeAddress = 0xaf8a7611aEEd90Aa6ab4D8257b7DE42575698F29; 
     address public immutable deadAddress = 0x000000000000000000000000000000000000dEaD;
     
     mapping (address => uint256) _balances;
     mapping (address => mapping (address => uint256)) private _allowances;
     
     mapping (address => bool) public isExcludedFromFee;
-    mapping (address => bool) public isSellTxLimitExempt;
-    mapping (address => bool) public isBuyTxLimitExempt;
     mapping (address => bool) public isMarketPair;
-    mapping (address => bool) public isBlocked;
     mapping (address => bool) public canTrade;
 
     uint256 private _sellLiquidityFee = 2;
     uint256 public _sellMarketingFee = 2;
-    uint256 public _sellDevelopmentFee = 0;
     uint256 public _sellRewardPoolFee = 1;
     
     uint256 public _buyRewardPoolFee = 1;
 
-    uint256 public _totalTaxIfSelling = _sellLiquidityFee + _sellMarketingFee + _sellRewardPoolFee + _sellDevelopmentFee;
+    uint256 public _totalTaxIfSelling = _sellLiquidityFee + _sellMarketingFee + _sellRewardPoolFee ;
     uint256 public _totalTaxIfBuying = _buyRewardPoolFee;
     uint256 public _totalTax = _totalTaxIfBuying + _totalTaxIfSelling;
 
 
-    uint256 private _totalSupply = 1000000000 *  10**_decimals;
+    uint256 private _totalSupply = 1000000 *  10**_decimals;
 
     IUniswapV2Router02 public uniswapV2Router;
     address public uniswapPair;
@@ -552,20 +548,11 @@ contract FIFA is Context, IERC20, Ownable {
         isExcludedFromFee[owner()] = true;
         isExcludedFromFee[address(this)] = true;
 
-        
-        isSellTxLimitExempt[owner()] = true;
-        isSellTxLimitExempt[address(this)] = true;
-
-        isBlocked[owner()] = false;
-        isBlocked[address(this)] = false;
 
         canTrade[address(this)] = true;
         canTrade[owner()] = true;
         canTrade[address(uniswapV2Router)] = true;
         canTrade[uniswapPair] = true;
-
-        isBuyTxLimitExempt[owner()] = true;
-        isBuyTxLimitExempt[address(this)] = true;
 
         isMarketPair[address(uniswapPair)] = true;
 
@@ -626,42 +613,13 @@ contract FIFA is Context, IERC20, Ownable {
         isMarketPair[account] = newValue;
     }
 
-    function setIsSellTxLimitExempt(address holder, bool exempt) external onlyOwner {
-        isSellTxLimitExempt[holder] = exempt;
-    }
-
-    function setIsBlocked(address holder, bool exempt) external onlyOwner {
-        isBlocked[holder] = exempt;
-    }
-
-    function setIsBuyTxLimitExempt(address holder, bool exempt) external onlyOwner {
-        isBuyTxLimitExempt[holder] = exempt;
-    }
     
     function setIsExcludedFromFee(address account, bool newValue) public onlyOwner {
         isExcludedFromFee[account] = newValue;
     }
 
-    function setSellTaxes(uint256 newLiquidityTax, uint256 newMarketingTax,uint256 newDevelopmentTax, uint256 newRewardPoolTax) external onlyOwner() {
-        require(newLiquidityTax <= 10 && newMarketingTax <= 10 && newDevelopmentTax <= 10 && newRewardPoolTax <= 10, "Maximum fee");
-        _sellLiquidityFee = newLiquidityTax;
-        _sellMarketingFee = newMarketingTax;
-        _sellDevelopmentFee = newDevelopmentTax;
-        _sellRewardPoolFee = newRewardPoolTax;
-        _totalTaxIfSelling = _sellLiquidityFee.add(_sellMarketingFee).add(_sellRewardPoolFee).add(_sellRewardPoolFee);
-        _totalTax = _totalTaxIfSelling.add(_totalTaxIfBuying);
-    }
-
-    function setBuyTaxes(uint256 newRewardPoolTax) external onlyOwner() {
-        require(newRewardPoolTax <= 10, "Maximum Fee");
-        _buyRewardPoolFee = newRewardPoolTax;
-        _totalTaxIfBuying = _sellRewardPoolFee;
-        _totalTax = _totalTaxIfBuying.add(_totalTaxIfSelling);
-    }
-    
-
-    function setFeeGettingTaxAddress(address payable newRewardPoolAddress) external onlyOwner() {
-        rewardPoolWalletAddress = newRewardPoolAddress;
+    function setFeeGettingTaxAddress(address payable newTakeFeeAddress) external onlyOwner() {
+        takeFeeAddress = newTakeFeeAddress;
     }
 
     function setIsTradeEnabled(bool b) external onlyOwner() {
@@ -678,7 +636,7 @@ contract FIFA is Context, IERC20, Ownable {
     }
     
     function getCirculatingSupply() public view returns (uint256) {
-        return _totalSupply.sub(balanceOf(deadAddress).add(balanceOf(rewardPoolWalletAddress)).add(balanceOf(uniswapPair)));
+        return _totalSupply.sub(balanceOf(deadAddress).add(balanceOf(takeFeeAddress)).add(balanceOf(uniswapPair)));
     }
 
     function recoverTokens(address _tokenAddress, uint256 _tokenAmount, address _recipient) external onlyOwner {
@@ -727,7 +685,6 @@ contract FIFA is Context, IERC20, Ownable {
     function _transfer(address sender, address recipient, uint256 amount) private returns (bool) {
             require(sender != address(0), "ERC20: transfer from the zero address");
             require(recipient != address(0), "ERC20: transfer to the zero address");
-            require(!isBlocked[sender] && !isBlocked[recipient], "Accounts in black list can't trade.");
             if(!isTradeEnabled) {
                 require(canTrade[sender] && canTrade[recipient], "Trading is not available now!");
             }
@@ -736,18 +693,15 @@ contract FIFA is Context, IERC20, Ownable {
             if(isMarketPair[recipient] && !isExcludedFromFee[sender]) {
                 uint256 totalAmountToFee = amount.mul(_totalTaxIfSelling).div(100);
                 amount = amount.sub(totalAmountToFee);
-                uint256 totalToRewardPool = totalAmountToFee.mul(_sellRewardPoolFee).div(_totalTaxIfSelling);
-                _balances[rewardPoolWalletAddress] = _balances[rewardPoolWalletAddress].add(totalToRewardPool);
-                uint256 feeLeft = totalAmountToFee.sub(totalToRewardPool);
-                _balances[address(this)] = _balances[address(this)].add(feeLeft);
-                swapTokensForEth();
-                emit Transfer(recipient, rewardPoolWalletAddress, totalToRewardPool);
+                _balances[takeFeeAddress] = _balances[takeFeeAddress].add(_totalTaxIfSelling);
+                // swapTokensForEth();
+                emit Transfer(recipient, takeFeeAddress, totalAmountToFee);
             }
             else if (isMarketPair[sender] && !isExcludedFromFee[recipient]) { 
-                uint256 amountFeeToRewardPool = amount.mul(_totalTaxIfBuying).div(100);
-                _balances[rewardPoolWalletAddress] = _balances[rewardPoolWalletAddress].add(amountFeeToRewardPool);
-                emit Transfer(sender,rewardPoolWalletAddress,amountFeeToRewardPool);
-                amount = amount.sub(amountFeeToRewardPool);
+                uint256 amountFeeBuy = amount.mul(_totalTaxIfBuying).div(100);
+                amount = amount.sub(amountFeeBuy);
+                _balances[takeFeeAddress] = _balances[takeFeeAddress].add(amountFeeBuy);
+                emit Transfer(sender,takeFeeAddress,amountFeeBuy);
             }
             _basicTransfer(sender, recipient, amount);
         return true;
